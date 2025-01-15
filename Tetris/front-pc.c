@@ -47,7 +47,7 @@ static argument_t argument;
 
 #define FILS 20
 #define COLS 10
-#define FONT_SIZE 26
+#define FONT_SIZE 27
 #define IS_LETTER(x) ( ('a'<=(x)&&(x)<='z') || ('A'<=(x)&&(x)<='Z') )
 int matrix[FILS][COLS];
 
@@ -289,6 +289,10 @@ static void TetrisPlay() {
 			case ALLEGRO_EVENT_TIMER:
 				//TODO backend acá (pieza cae)**************
 				argument.redraw = true;
+				//TODO falta un if preguntando si chocó contra el piso (la variable la pasa backend)
+				if(true) {
+					al_play_sample(argument.sfx8, 1.0, 0.0, 1.0, ALLEGRO_PLAYMODE_ONCE, NULL);
+				}
 				if(alive == false) {
 					argument.flagPlay = true;
 					TetrisGameOver();
@@ -327,6 +331,10 @@ static void TetrisPlay() {
 					else if(al_key_down(&(argument.ks), ALLEGRO_KEY_DOWN)) {
 						argument.redraw = true;
 						//TODO agregar backend acá*****************
+						//TODO falta un if preguntando si chocó contra el piso (la variable la pasa backend)
+						if(true) {
+							al_play_sample(argument.sfx8, 1.0, 0.0, 1.0, ALLEGRO_PLAYMODE_ONCE, NULL);
+						}
 					}
 				}
 				break;
@@ -521,9 +529,11 @@ static void TetrisGameOver() {
 				al_get_keyboard_state(&(argument.ks));
 
 				if(al_key_down(&(argument.ks), ALLEGRO_KEY_ENTER)) {
-					//TODO score...
+					//TODO score (llamo a backend?)
 					int i;
+					//falta un if preguntado si el puntaje es más alto
 					for(i=0 ; i<6 ; i++) {
+						str3[i] = str2[i];
 						str2[i] = str1[i];
 						str1[i] = '-';
 					}
@@ -569,9 +579,13 @@ static void gameoverDraw() {
 	al_clear_to_color(al_map_rgb(0, 0, 0));		// Limpio pantalla con negro.
 	al_draw_scaled_bitmap(argument.gameover,	0, 0,	GAMEOVER_WIDTH, GAMEOVER_HEIGHT,
 						  dx, dy,	BACK_WIDTH * scale, BACK_HEIGHT * scale, 	0);
-	al_draw_text(argument.font, al_map_rgb(255, 255, 255), dx + move*6, dy +move*19, 0, str1);
-	al_draw_text(argument.font, al_map_rgb(255, 255, 255), dx + move*6, dy +move*21, 0, str2);
-	al_draw_text(argument.font, al_map_rgb(255, 255, 255), dx + move*6, dy +move*23, 0, str3);
+	char dest[19];
+	snprintf(dest, sizeof(dest), "1 %s %06d %02d", str1, score, level);
+	al_draw_text(argument.font, al_map_rgb(255, 255, 255), dx + move*7, dy +move*19, 0, dest);
+	snprintf(dest, sizeof(dest), "2 %s %06d %02d", str2, score, level);
+	al_draw_text(argument.font, al_map_rgb(255, 255, 255), dx + move*7, dy +move*21, 0, dest);
+	snprintf(dest, sizeof(dest), "3 %s %06d %02d", str3, score, level);
+	al_draw_text(argument.font, al_map_rgb(255, 255, 255), dx + move*7, dy +move*23, 0, dest);
 
 	al_flip_display();
 }
