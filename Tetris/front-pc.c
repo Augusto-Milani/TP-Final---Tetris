@@ -271,6 +271,7 @@ static void menuDraw() {
 
 
 static void TetrisPlay() {
+	//initBoard();		TODO
 	playDraw();
 	alive = true;
 
