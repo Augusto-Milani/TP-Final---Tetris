@@ -1,36 +1,26 @@
+#include "backend.h"
 #include "pieces.h"
-#include <stdio.h>
-#include <stdlib.h> //TEMP, JUST A STUB
-#include <time.h> //TEMP, JUST A STUB
 
-#define BOARD_HEIGHT 20
-#define BOARD_WIDTH 10
+#define PIECES_TETRIS 7
+#define PIECE_3x3_AUX 5
+#define PIECE_SIZE(x) ((x)!=6	?	((x)!=3 ? 3 : 2)	:	4)	// if x is an I, it's 4x4, if it's an O, its 2x2. Otherwise, it's 3x3
 
-#if BOARD_HEIGHT<4 || BOARD_WIDTH<4
-	#error Error: The board is very small.
-#endif
+int board[BOARD_HEIGHT][BOARD_WIDTH];
 
-void nextPiece();
+int score, top, lines, level;
+int tetromino[7];
 
-void rotateClockWise(int[][4]);
 
-void printMatrix_3by3(int[][3]);
-void printMatrix_4by4(int[][4]);
-void printBoard();
-
-void addPiece(int);
-void shiftPieceDown();
-void shiftPieceLeft();
-void shiftPieceRight();
-void collision();
-
-void initBoard();
-static int board[BOARD_HEIGHT][BOARD_WIDTH];
 static int x_coord, y_coord;
-void* pieces[] = {(void*)L, (void*)J, (void*)S, (void*)Z, (void*)T, (void*)O, (void*)I}; //This array holds pointers to all pieces in game, it has to be global for ease of coding
+void* pieces[PIECES_TETRIS] = {(void*)T, (void*)J, (void*)Z, (void*)O, (void*)S, (void*)L, (void*)I}; //This array holds pointers to all pieces in game, it has to be global for ease of coding
+// IMPORTANT: The arrangment is crutial for deciding if it's a 3x3 piece or 4x4 piece.
+// 			  We use 5 pieces of 3x3 and the last two are 4x4.
+
+
 static int status[4][4];
 static int nextPieceID;
 
+/*
 int main() {
     srand(time(NULL)); //set random seed
 
@@ -47,17 +37,11 @@ int main() {
         shiftPieceLeft();
             printBoard();
 
-/*
-    printMatrix_4by4(I);
-    printMatrix_3by3(L);
-    rotateCW_3by3(L);
-    rotateCW_4by4(I);
-    rotateCW_4by4(I);
-    printMatrix_3by3(L);
-    printMatrix_4by4(I);
-*/
 
 }
+
+
+*/
 
 //initialize the board, 20*10 size
 void initBoard() {
@@ -70,13 +54,12 @@ void initBoard() {
 }
 
 void nextPiece() {
-	x_coord = 0; 	//(int)BOARD_WIDTH/2 - 2;
+	x_coord = (int)BOARD_WIDTH/2 - 2;
 	y_coord = 0;
 
-    nextPieceID = rand() % 7;	 //rand() % 7 	// para que sea entre 0 y 6;
-    
+    nextPieceID = rand() % PIECES_TETRIS;	 //Tetris has 7 pieces
 
-    if(nextPieceID < 5) {
+    if(nextPieceID < PIECE_3x3_AUX) {
         printMatrix_3by3(pieces[nextPieceID]);
     }
     else {
@@ -90,9 +73,9 @@ void nextPiece() {
 
 
 // Rotate function
-void rotateClockWise(int matrix[][4]) {
+void rotateClockWise() {
     int i, j, aux;
-    aux = (nextPieceID < 5) ? 3 : 4;
+    aux = PIECE_SIZE(nextPieceID);
     
     // Prevent rotation if there's an obstacle
     for (i = y_coord; i < y_coord + aux; i++) {
@@ -106,14 +89,14 @@ void rotateClockWise(int matrix[][4]) {
     // Rotates
     for (i = 0; i < aux; i++) {
     	for (j = 0; j < aux; j++) {
-    		board[i + y_coord][j + x_coord] = matrix[aux-1-j][i];	//Rotates any 4x4 matrix of ints, clockwise
+    		board[i + y_coord][j + x_coord] = status[aux-1-j][i];	//Rotates any 4x4 matrix of ints, clockwise
 
     	}
     }
     for (i = 0; i < aux; i++) {
 		for (j = 0; j < aux; j++) {
 			if(board[i + y_coord][j + x_coord] != 2)
-			matrix[i][j] = board[i + y_coord][j + x_coord];		//Saves the status, except the static ones.
+			status[i][j] = board[i + y_coord][j + x_coord];		//Saves the status, except the static ones.
 		}
     }
 }
@@ -174,17 +157,19 @@ void printBoard(){ //this is a stub
 
 void addPiece(int nextPieceID) {
 	int i, j, aux;
-	aux = (nextPieceID < 5) ? 3 : 4;
+	aux = PIECE_SIZE(nextPieceID);
 
-	int (*piece)[aux] = (int(*)[aux])(pieces[nextPieceID]); // Cast to 3x3 matrix
+	int (*piece)[aux] = (int(*)[aux])(pieces[nextPieceID]); // Cast to matrix
 	for (i = 0; i < aux; i++) {
 		for (j = 0; j < aux; j++) {
+			status[i][j] = 0;
 			if(piece[i][j] == 1) {
+				status[i][j] = 1;
 				if(board[i][j + x_coord] == 2) {
-					//TODO alive = false; (variable de frontend, global) enters game over
+					//alive = false; 		//Enters game over
 				}
 				else {
-					status[i][j] = piece[i][j];
+					//status[i][j] = piece[i][j];
 					board[i][j + x_coord] = piece[i][j]; // Place piece at the top, centered horizontally
 				}
 			}
@@ -197,16 +182,12 @@ void addPiece(int nextPieceID) {
 
 void shiftPieceDown() {
 	int i, j, aux;
-	aux = (nextPieceID < 5) ? 3 : 4;
+	aux = PIECE_SIZE(nextPieceID);
 
     // Prevent shifting if the piece cannot move further down
-	if (y_coord + aux >= BOARD_HEIGHT) {
-		collision();
-        return;
-    }
     for(i = y_coord + aux-1; i >= y_coord; i--) {
 		for(j = x_coord; j <= x_coord + aux-1; j++) {
-			if(board[i + 1][j] == 2  &&  board[i][j] == 1) {
+			if((i >= BOARD_HEIGHT-1  &&  board[i][j] == 1)	||	(board[i + 1][j] == 2  &&  board[i][j] == 1)) {
 				collision();
 				return;
 			}
@@ -220,8 +201,8 @@ void shiftPieceDown() {
         		board[i + 1][j] = board[i][j];
         	}
         	if(board[i][j] != 2) {
-        		board[i][j] = 0;
-        	}
+				board[i][j] = 0;
+			}
         }
     }
     for (j = x_coord; j < x_coord + aux; j++) {
@@ -236,7 +217,7 @@ void shiftPieceDown() {
 
 void shiftPieceRight() {
 	int i, j, aux;
-	aux = (nextPieceID < 5) ? 3 : 4;
+	aux = PIECE_SIZE(nextPieceID);
 
     // Prevent shifting if the piece cannot move further right
     if (x_coord + aux >= BOARD_WIDTH) {
@@ -244,7 +225,7 @@ void shiftPieceRight() {
     }
     for(i = y_coord + aux-1; i >= y_coord; i--) {
 		for(j = x_coord; j <= x_coord + aux-1; j++) {
-			if(board[i][j + 1] == 2  &&  board[i][j] == 1) {
+			if((j >= BOARD_HEIGHT-1  &&  board[i][j] == 1)	||	(board[i][j + 1] == 2  &&  board[i][j] == 1)) {
 				return;
 			}
 		}
@@ -253,7 +234,12 @@ void shiftPieceRight() {
     // Shifts
     for (i = y_coord + aux-1; i >= y_coord; i--) { // Starts from the bottom row, right column
 		for (j = x_coord + aux-1; j >= x_coord; j--) {
-			board[i][j+1] = board[i][j];
+			if(board[i][j] == 1) {
+				board[i][j + 1] = board[i][j];
+			}
+			if(board[i][j] != 2) {
+				board[i][j] = 0;
+			}
 		}
 	}
     for (i = y_coord; i < y_coord + aux; i++) {
@@ -268,15 +254,12 @@ void shiftPieceRight() {
 
 void shiftPieceLeft() {
 	int i, j, aux;
-	aux = (nextPieceID < 5) ? 3 : 4;
+	aux = PIECE_SIZE(nextPieceID);
 
     // Prevent shifting if the piece cannot move further left
-    if (x_coord == 0) {
-        return;
-    }
     for(i = y_coord + aux-1; i >= y_coord; i--) {
 		for(j = x_coord; j <= x_coord + aux-1; j++) {
-			if(board[i][j - 1] == 2  &&  board[i][j] == 1) {
+			if((x_coord == 0)	||	(board[i][j - 1] == 2  &&  board[i][j] == 1)) {
 				return;
 			}
 		}
@@ -292,12 +275,11 @@ void shiftPieceLeft() {
 		board[i][x_coord + aux-1] = 0;
 	}
 
-	 x_coord++;
-}			//TODO NOTA IMPORTANTE: REVISAR CASO LÍMITE EXTREMO DERECHO, IDEM shiftPieceRight (que no copie afuera de matriz)
+	 x_coord--;
+}
 
 
 void collision() {
-	printf("hola\n");
 	int i, j, k, flag;
 	for(i = y_coord + 2; i >= y_coord; i--) {
 		for(j = x_coord; j <= x_coord + 2; j++) {
@@ -324,9 +306,11 @@ void collision() {
 			}
 
 			i++;
-			//TODO score y lineas aumenta
+			lines++;
 		}
 	}
+	tetromino[nextPieceID]++;
+	score++;
 	nextPiece();
 }
 

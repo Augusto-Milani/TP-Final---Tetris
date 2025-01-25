@@ -4,7 +4,7 @@
   @author   Augusto Milani
  ******************************************************************************/
 
-#include <stdio.h>
+#include "backend.h"
 #include <allegro5/allegro5.h>
 #include <allegro5/allegro_image.h>
 #include <allegro5/allegro_font.h>
@@ -32,8 +32,7 @@ typedef struct {
 		bool redraw;					// Bandera para dibujar.
 	} argument_t;
 
-int score=40, top=1800, lines=13, level=2;	//TODO variables a usar por backend
-int tetromino[7];
+extern int score, top, lines, level, tetromino[7];
 char str1[7] = "------";
 char str2[7] = "------";
 char str3[7] = "------";
@@ -45,11 +44,8 @@ static int dx, dy, move;	//Centrar imagen en pantalla.
 static float scale;
 static argument_t argument;
 
-#define FILS 20
-#define COLS 10
 #define FONT_SIZE 27
 #define IS_LETTER(x) ( ('a'<=(x)&&(x)<='z') || ('A'<=(x)&&(x)<='Z') )
-int matrix[FILS][COLS];
 
 static void check_init(void *pointer, const char *name);
 static void must_init (bool test, const char *description);
@@ -78,6 +74,8 @@ typedef struct {
 #define BACKGROUND_FILE "background.png"
 #define BLOCKS_FILE 	"blocks.png"
 #define GAMEOVER_FILE	"game_over.png"
+
+extern int board[BOARD_HEIGHT][BOARD_WIDTH];
 
 int main() {
 	srand(time(NULL));	//Semilla para función rand().
@@ -182,12 +180,6 @@ int main() {
 
 
 	/* INICIA JUEGO */
-	int i, j;
-	for(i=0 ; i<FILS ; i++) {
-		for(j=0 ; j<COLS ; j++) {
-			matrix[i][j] = 1;
-		}
-	}
 	al_start_timer(argument.timer);
 	TetrisMenu();
 
@@ -271,7 +263,9 @@ static void menuDraw() {
 
 
 static void TetrisPlay() {
-	//initBoard();		TODO
+	initBoard();	// Inicializa matriz en 0.
+	nextPiece();	// Selecciona aleatoriamente la siguiente pieza, y la coloca en la matriz "board".
+
 	playDraw();
 	alive = true;
 
@@ -288,10 +282,9 @@ static void TetrisPlay() {
 				break;
 
 			case ALLEGRO_EVENT_TIMER:
-				//TODO backend acá (pieza cae)**************
+				shiftPieceDown();	// Desplaza la pieza hacia abajo en la matriz "board".
 				argument.redraw = true;
-				//TODO falta un if preguntando si chocó contra el piso (la variable la pasa backend)
-				if(true) {
+				if(false) {
 					al_play_sample(argument.sfx8, 1.0, 0.0, 1.0, ALLEGRO_PLAYMODE_ONCE, NULL);
 				}
 				if(alive == false) {
@@ -306,7 +299,7 @@ static void TetrisPlay() {
 					//TODO backend (pieza gira izq)***************
 				}
 				else if((argument.event).mouse.button == 2) {	//Click derecho.
-					//TODO backend (pieza gira derecha)***************
+					rotateClockWise();
 				}
 				break;
 
@@ -320,20 +313,19 @@ static void TetrisPlay() {
 				else {
 					if(al_key_down(&(argument.ks), ALLEGRO_KEY_LEFT)) {
 						al_play_sample(argument.sfx4, 1.0, 0.0, 1.0, ALLEGRO_PLAYMODE_ONCE, NULL);
-						alive = false;
+						//alive = false;
 						argument.redraw = true;
-						//TODO agregar backend acá*****************
+						shiftPieceLeft();	// Desplaza la pieza a la izquierda en la matriz "board".
 					}
 					else if(al_key_down(&(argument.ks), ALLEGRO_KEY_RIGHT)) {
 						al_play_sample(argument.sfx4, 1.0, 0.0, 1.0, ALLEGRO_PLAYMODE_ONCE, NULL);
 						argument.redraw = true;
-						//TODO agregar backend acá*****************
+						shiftPieceRight();	// Desplaza la pieza a la derecha en la matriz "board".
 					}
 					else if(al_key_down(&(argument.ks), ALLEGRO_KEY_DOWN)) {
 						argument.redraw = true;
-						//TODO agregar backend acá*****************
-						//TODO falta un if preguntando si chocó contra el piso (la variable la pasa backend)
-						if(true) {
+						shiftPieceDown();	// Desplaza la pieza hacia abajo en la matriz "board".
+						if(false) {
 							al_play_sample(argument.sfx8, 1.0, 0.0, 1.0, ALLEGRO_PLAYMODE_ONCE, NULL);
 						}
 					}
@@ -370,10 +362,6 @@ static void playDraw() {
 	sprintf(str, "%02d", level);
 	al_draw_text(argument.font, al_map_rgb(255, 255, 255), dx + move*26, dy +move*20, 0, str);
 
-	tetromino[0] = 2;
-	tetromino[3] = 19;
-	tetromino[5] = 24;
-	tetromino[6] = 300;
 	for(i=0 ; i<7 ; i++) {
 		sprintf(str, "%03d", tetromino[i]);
 		al_draw_text(argument.font, al_map_rgb(255, 255, 255), dx + move*6.5, dy +move*(11+i*2), 0, str);
@@ -385,9 +373,9 @@ static void playDraw() {
 				dx + move*(24+j), dy + move*(13+i),	TILE_WIDTH * scale, TILE_HEIGHT * scale,	0);
 		}
 	}
-	for(i=0 ; i<FILS ; i++) {
-		for(j=0 ; j<COLS ; j++) {
-			if(matrix[i][j]) {
+	for(i=0 ; i<BOARD_HEIGHT ; i++) {
+		for(j=0 ; j<BOARD_WIDTH ; j++) {
+			if(board[i][j]) {		// Imprime si no es nulo.
 				al_draw_scaled_bitmap(argument.blocks,	0, 0,	TILE_WIDTH, TILE_HEIGHT,
 									 dx + move*(12+j), dy + move*(5+i),	TILE_WIDTH * scale, TILE_HEIGHT * scale,	0);
 			}
@@ -402,7 +390,7 @@ static void playDraw() {
 static void TetrisPause() {
 
 	unsigned int paused_position = al_get_sample_instance_position(argument.sample_instance);
-	al_stop_sample_instance(argument.sample_instance); // Detener la reproducción de música
+	al_stop_sample_instance(argument.sample_instance); // Detener la reproducción de música.
 
 	int index = 0;
 	pauseDraw(index);
