@@ -51,12 +51,12 @@
 						</toolChain>
 					</folderInfo>
 					<fileInfo id="cdt.managedbuild.config.gnu.exe.debug.182069020.1616316769" name="pieces.h" rcbsApplicability="disable" resourcePath="Tetris/pieces.h" toolsToInvoke=""/>
-					<fileInfo id="cdt.managedbuild.config.gnu.exe.debug.182069020.1396390956" name="front-pc.c" rcbsApplicability="disable" resourcePath="Tetris/front-pc.c" toolsToInvoke="cdt.managedbuild.tool.gnu.c.compiler.exe.debug.1715877036.1527661844">
-						<tool id="cdt.managedbuild.tool.gnu.c.compiler.exe.debug.1715877036.1527661844" name="GCC C Compiler" superClass="cdt.managedbuild.tool.gnu.c.compiler.exe.debug.1715877036"/>
+					<fileInfo id="cdt.managedbuild.config.gnu.exe.debug.182069020.152942978" name="front-pc.c" rcbsApplicability="disable" resourcePath="Tetris/front-pc.c" toolsToInvoke="cdt.managedbuild.tool.gnu.c.compiler.exe.debug.1715877036.718514930">
+						<tool id="cdt.managedbuild.tool.gnu.c.compiler.exe.debug.1715877036.718514930" name="GCC C Compiler" superClass="cdt.managedbuild.tool.gnu.c.compiler.exe.debug.1715877036"/>
 					</fileInfo>
 					<fileInfo id="cdt.managedbuild.config.gnu.exe.debug.182069020.1122605951" name="backend" rcbsApplicability="disable" resourcePath="Tetris/backend" toolsToInvoke=""/>
 					<sourceEntries>
-						<entry excluding="Tetris/front-pc.c|Tetris/front-pc.h" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
+						<entry excluding="Tetris/front-pc.h" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
 					</sourceEntries>
 				</configuration>
 			</storageModule>
