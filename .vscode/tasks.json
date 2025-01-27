@@ -5,6 +5,7 @@
             "label": "C/C++: gcc build active file with Allegro",
             "command": "/usr/bin/gcc",
             "args": [
+    "backend.c",
     "-fdiagnostics-color=always",
     "-g",
     "${file}",
