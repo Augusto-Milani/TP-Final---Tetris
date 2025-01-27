@@ -70,10 +70,10 @@ typedef struct {
 
 
 
-#define TITLE_FILE 		"title.png"
-#define BACKGROUND_FILE "background.png"
-#define BLOCKS_FILE 	"blocks.png"
-#define GAMEOVER_FILE	"game_over.png"
+#define TITLE_FILE 		"Assets/title.png"
+#define BACKGROUND_FILE "Assets/background.png"
+#define BLOCKS_FILE 	"Assets/blocks.png"
+#define GAMEOVER_FILE	"Assets/game_over.png"
 
 extern int board[BOARD_HEIGHT][BOARD_WIDTH];
 
@@ -99,7 +99,7 @@ int main() {
 
 
 	/* Música */
-	argument.music1 = al_load_sample("Music1.wav");
+	argument.music1 = al_load_sample("Assets/Music1.wav");
 	must_init(argument.music1, "music");
 
 	argument.sample_instance = al_create_sample_instance(argument.music1);
@@ -114,15 +114,15 @@ int main() {
 
 
 	/* Efectos de Sonido */
-	argument.sfx4 = al_load_sample("SFX 4.wav");
+	argument.sfx4 = al_load_sample("Assets/SFX 4.wav");
 	must_init(argument.sfx4, "SFX 4");
-	argument.sfx6 = al_load_sample("SFX 6.wav");
+	argument.sfx6 = al_load_sample("Assets/SFX 6.wav");
 	must_init(argument.sfx6, "SFX 6");
-	argument.sfx8 = al_load_sample("SFX 8.wav");
+	argument.sfx8 = al_load_sample("Assets/SFX 8.wav");
 	must_init(argument.sfx8, "SFX 8");
 
 	/* Fuente de Texto */
-	argument.font = al_load_font("nintendo-nes-font.ttf", FONT_SIZE, 0);
+	argument.font = al_load_font("Assets/nintendo-nes-font.ttf", FONT_SIZE, 0);
 	check_init(argument.font, "tetris font TTF");
 
 	/* Imágenes */
