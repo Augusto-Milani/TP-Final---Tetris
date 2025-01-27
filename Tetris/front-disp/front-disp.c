@@ -10,8 +10,8 @@
 
 #include <stdio.h>
 #include <stdint.h>
-#include "disdrv.h"
-#include "joydrv.h"
+#include "Libs/disdrv.h"
+#include "Libs/joydrv.h"
 #include "letras.h"
 
 #define MAX_HEIGHT 16
