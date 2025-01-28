@@ -118,7 +118,7 @@ short tag (void)
 {
 	dcoord_t coords={1,6};
 	joyinfo_t info;
-	char num=0,i;
+	char num=0,i,aux=0;
 	short user;
 	letras_on(coords,'T');
 	(coords.x)+=4;
@@ -143,7 +143,13 @@ short tag (void)
 			num++;
 		}
 	}while(info.sw==J_NOPRESS);
+	letras_on(coords,'0'+num);
 	user= user*10 + num;
+	(coords.x)+=5;
+	if(i==2)
+	{
+		(coords.x)++;
+	}
 	}
 	return user;
 
@@ -163,13 +169,17 @@ static void play (void)
 
 static void playini(void)
 {
-  dcoord_t coord={10,0};
-  while(coord.y<MAX_HEIGHT)
-  {
-    disp_write(coord,D_ON);
-    coord.y++;
-  }
-  
+	disp_clear();
+	disp_update();
+	dcoord_t coord;
+	(coord.y)=0;
+	(coord.x)=10;
+	while(coord.y<MAX_HEIGHT)
+	{
+		disp_write(coord,D_ON);
+		(coord.y)++;
+	}
+	disp_update();
 }
 
 

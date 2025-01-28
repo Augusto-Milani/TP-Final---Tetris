@@ -229,7 +229,7 @@ void letras_on (dcoord_t coords,char let)
 			(coords.y)++;
 			disp_write(coords,D_ON);
 		}
-		(coords.x)--;
+		(coords.y)++;
 		for(i=0;i<3;i++)
 		{
 			(coords.x)--;
@@ -261,159 +261,224 @@ void letras_on (dcoord_t coords,char let)
 		disp_write(coords,D_ON);
 		break;
 	case '2':
-	    for (i = 0; i < 5; i++) {
+	    for (i = 0; i < 5; i++)
+	    {
 	        disp_write(coords, D_ON);
 	        (coords.x)++;
 	    }
-	    for (i = 0; i < 3; i++) {
-	        disp_write(coords, D_ON);
+	    (coords.x)-=5;
+	    for (i = 0; i < 4; i++)
+	    {
 	        (coords.y)--;
-	    }
-	    for (i = 0; i < 5; i++) {
+	        (coords.x)++;
 	        disp_write(coords, D_ON);
+	    }
+	    (coords.y)--;
+        disp_write(coords, D_ON);
+        (coords.y)--;
+	    for (i = 0; i < 3; i++)
+	    {
 	        (coords.x)--;
-	    }
-	    for (i = 0; i < 3; i++) {
 	        disp_write(coords, D_ON);
-	        (coords.y)--;
 	    }
-	    for (i = 0; i < 5; i++) {
-	        disp_write(coords, D_ON);
-	        (coords.x)++;
-	    }
+	    (coords.x)--;
+	    (coords.y)++;
+        disp_write(coords, D_ON);
 	    break;
 	case '3':
-	    for (i = 0; i < 5; i++) {
+	    for (i = 0; i < 4; i++)
+	    {
 	        disp_write(coords, D_ON);
 	        (coords.x)++;
 	    }
-	    for (i = 0; i < 3; i++) {
+	    (coords.y)--;
+	    for (i = 0; i < 2; i++)
+	    {
 	        disp_write(coords, D_ON);
 	        (coords.y)--;
 	    }
-	    for (i = 0; i < 5; i++) {
-	        disp_write(coords, D_ON);
+	    for (i = 0; i < 2; i++)
+	    {
 	        (coords.x)--;
-	    }
-	    for (i = 0; i < 3; i++) {
 	        disp_write(coords, D_ON);
+	    }
+	    (coords.x)+=2;
+	    for (i = 0; i < 2; i++)
+	    {
 	        (coords.y)--;
-	    }
-	    for (i = 0; i < 5; i++) {
 	        disp_write(coords, D_ON);
-	        (coords.x)++;
+	    }
+	    (coords.y)--;
+	    for (i = 0; i < 4; i++)
+	    {
+	        (coords.x)--;
+	        disp_write(coords, D_ON);
 	    }
 	    break;
 	case '4':
-	    for (i = 0; i < 4; i++) {
+		(coords.x)+=3;
+	    for (i = 0; i < 7; i++)
+	    {
 	        disp_write(coords, D_ON);
 	        (coords.y)--;
-	    }
-	    for (i = 0; i < 5; i++) {
-	        disp_write(coords, D_ON);
-	        (coords.x)++;
 	    }
 	    (coords.y)++;
-	    for (i = 0; i < 3; i++) {
+	    for (i = 0; i < 3; i++)
+	    {
+	        (coords.x)--;
+	        (coords.y)++;
 	        disp_write(coords, D_ON);
-	        (coords.y)--;
+	    }
+	    for (i = 0; i < 4; i++)
+	    {
+			(coords.x)++;
+	    	if(i!=2)
+	    	{
+				disp_write(coords, D_ON);
+	    	}
 	    }
 	    break;
 	case '5':
-	    for (i = 0; i < 5; i++) {
+	    for (i = 0; i < 5; i++)
+	    {
 	        disp_write(coords, D_ON);
 	        (coords.x)++;
 	    }
-	    for (i = 0; i < 3; i++) {
-	        disp_write(coords, D_ON);
+	    (coords.x)--;
+	    for (i = 0; i < 3; i++)
+	    {
 	        (coords.y)--;
-	    }
-	    for (i = 0; i < 5; i++) {
 	        disp_write(coords, D_ON);
+	    }
+	    for (i = 0; i < 4; i++)
+	    {
 	        (coords.x)--;
-	    }
-	    for (i = 0; i < 3; i++) {
 	        disp_write(coords, D_ON);
+	    }
+	    for (i = 0; i < 3; i++)
+	    {
 	        (coords.y)--;
-	    }
-	    for (i = 0; i < 5; i++) {
 	        disp_write(coords, D_ON);
+	    }
+	    for (i = 0; i < 4; i++)
+	    {
 	        (coords.x)++;
+	        disp_write(coords, D_ON);
 	    }
 	    break;
 	case '6':
-	    (coords.x) += 4;
-	    for (i = 0; i < 7; i++) {
-	        disp_write(coords, D_ON);
-	        (coords.y)--;
-	    }
-	    for (i = 0; i < 5; i++) {
-	        disp_write(coords, D_ON);
-	        (coords.x)--;
-	    }
-	    for (i = 0; i < 3; i++) {
-	        disp_write(coords, D_ON);
+		for (i = 0; i < 5; i++)
+		{
+			disp_write(coords, D_ON);
+			(coords.x)++;
+		}
+		(coords.x)--;
+		for (i = 0; i < 3; i++)
+		{
+			(coords.y)--;
+			disp_write(coords, D_ON);
+		}
+		for (i = 0; i < 4; i++)
+		{
+			(coords.x)--;
+			disp_write(coords, D_ON);
+		}
+	    for (i = 0; i < 2; i++)
+	    {
 	        (coords.y)++;
-	    }
-	    for (i = 0; i < 5; i++) {
 	        disp_write(coords, D_ON);
+	    }
+	    (coords.y)-=2;
+	    for (i = 0; i < 3; i++)
+	    {
+	        (coords.y)--;
+	        disp_write(coords, D_ON);
+	    }
+	    for (i = 0; i < 4; i++)
+	    {
 	        (coords.x)++;
+	        disp_write(coords, D_ON);
 	    }
 	    break;
 	case '7':
-	    for (i = 0; i < 5; i++) {
+	    for (i = 0; i < 5; i++)
+	    {
 	        disp_write(coords, D_ON);
 	        (coords.x)++;
-	    }
-	    for (i = 0; i < 7; i++) {
-	        disp_write(coords, D_ON);
 	        (coords.y)--;
+	    }
+	    (coords.x)--;
+        disp_write(coords, D_ON);
+        (coords.y)--;
+	    for (i = 0; i < 4; i++)
+	    {
+	        disp_write(coords, D_ON);
+	        (coords.x)--;
 	    }
 	    break;
 	case '8':
-	    (coords.x) += 4;
-	    for (i = 0; i < 7; i++) {
-	        disp_write(coords, D_ON);
-	        (coords.y)--;
-	    }
-	    for (i = 0; i < 5; i++) {
-	        disp_write(coords, D_ON);
-	        (coords.x)--;
-	    }
-	    for (i = 0; i < 3; i++) {
-	        disp_write(coords, D_ON);
-	        (coords.y)++;
-	    }
-	    for (i = 0; i < 5; i++) {
-	        disp_write(coords, D_ON);
+	    for (i = 0; i < 3; i++)
+	    {
 	        (coords.x)++;
-	    }
-	    for (i = 0; i < 3; i++) {
 	        disp_write(coords, D_ON);
+	    }
+	    (coords.x)++;
+	    for (i = 0; i < 5; i++)
+	    {
 	        (coords.y)--;
-	    }
-	    for (i = 0; i < 5; i++) {
 	        disp_write(coords, D_ON);
+	    }
+	    (coords.y)--;
+	    for (i = 0; i < 3; i++)
+	    {
 	        (coords.x)--;
+	        disp_write(coords, D_ON);
+	    }
+	    (coords.x)--;
+	    for (i = 0; i < 5; i++)
+	    {
+	        (coords.y)++;
+	        disp_write(coords, D_ON);
+	    }
+	    (coords.y)-=2;
+	    for (i = 0; i < 3; i++)
+	    {
+	        (coords.x)++;
+	        disp_write(coords, D_ON);
 	    }
 	    break;
 	case '9':
-	    for (i = 0; i < 5; i++) {
+	    for (i = 0; i < 4; i++)
+	    {
 	        disp_write(coords, D_ON);
 	        (coords.x)++;
 	    }
-	    for (i = 0; i < 3; i++) {
-	        disp_write(coords, D_ON);
-	        (coords.y)--;
+	    for (i = 0; i < 5; i++)
+	    {
+			(coords.y)--;
+	    	if(i!=2)
+	    	{
+				disp_write(coords, D_ON);
+	    	}
 	    }
-	    for (i = 0; i < 5; i++) {
-	        disp_write(coords, D_ON);
+	    (coords.y)--;
+	    for (i = 0; i < 3; i++)
+	    {
 	        (coords.x)--;
-	    }
-	    for (i = 0; i < 7; i++) {
 	        disp_write(coords, D_ON);
-	        (coords.y)++;
 	    }
+	    (coords.x)--;
+	    for (i = 0; i < 2; i++)
+	    {
+	        (coords.y)++;
+	        disp_write(coords, D_ON);
+	    }
+	    (coords.y)++;
+	    for (i = 0; i < 3; i++)
+		{
+			(coords.x)++;
+			disp_write(coords, D_ON);
+		}
 	    break;
 	}
 	disp_update();
@@ -642,7 +707,7 @@ void letras_off (dcoord_t coords,char let)
 			(coords.y)++;
 			disp_write(coords,D_OFF);
 		}
-		(coords.x)--;
+		(coords.y)++;
 		for(i=0;i<3;i++)
 		{
 			(coords.x)--;
@@ -674,158 +739,223 @@ void letras_off (dcoord_t coords,char let)
 		disp_write(coords,D_OFF);
 		break;
 	case '2':
-	    for (i = 0; i < 5; i++) {
+	    for (i = 0; i < 5; i++)
+	    {
 	        disp_write(coords, D_OFF);
 	        (coords.x)++;
 	    }
-	    for (i = 0; i < 3; i++) {
-	        disp_write(coords, D_OFF);
+	    (coords.x)-=5;
+	    for (i = 0; i < 4; i++)
+	    {
 	        (coords.y)--;
-	    }
-	    for (i = 0; i < 5; i++) {
+	        (coords.x)++;
 	        disp_write(coords, D_OFF);
+	    }
+	    (coords.y)--;
+	    disp_write(coords, D_OFF);
+	    (coords.y)--;
+	    for (i = 0; i < 3; i++)
+	    {
 	        (coords.x)--;
-	    }
-	    for (i = 0; i < 3; i++) {
 	        disp_write(coords, D_OFF);
-	        (coords.y)--;
 	    }
-	    for (i = 0; i < 5; i++) {
-	        disp_write(coords, D_OFF);
-	        (coords.x)++;
-	    }
+	    (coords.x)--;
+	    (coords.y)++;
+	    disp_write(coords, D_OFF);
 	    break;
 	case '3':
-	    for (i = 0; i < 5; i++) {
+	    for (i = 0; i < 4; i++)
+	    {
 	        disp_write(coords, D_OFF);
 	        (coords.x)++;
 	    }
-	    for (i = 0; i < 3; i++) {
+	    (coords.y)--;
+	    for (i = 0; i < 2; i++)
+	    {
 	        disp_write(coords, D_OFF);
 	        (coords.y)--;
 	    }
-	    for (i = 0; i < 5; i++) {
-	        disp_write(coords, D_OFF);
+	    for (i = 0; i < 2; i++)
+	    {
 	        (coords.x)--;
-	    }
-	    for (i = 0; i < 3; i++) {
 	        disp_write(coords, D_OFF);
+	    }
+	    (coords.x)+=2;
+	    for (i = 0; i < 2; i++)
+	    {
 	        (coords.y)--;
-	    }
-	    for (i = 0; i < 5; i++) {
 	        disp_write(coords, D_OFF);
-	        (coords.x)++;
+	    }
+	    (coords.y)--;
+	    for (i = 0; i < 4; i++)
+	    {
+	        (coords.x)--;
+	        disp_write(coords, D_OFF);
 	    }
 	    break;
 	case '4':
-	    for (i = 0; i < 4; i++) {
+	    (coords.x)+=3;
+	    for (i = 0; i < 7; i++)
+	    {
 	        disp_write(coords, D_OFF);
 	        (coords.y)--;
-	    }
-	    for (i = 0; i < 5; i++) {
-	        disp_write(coords, D_OFF);
-	        (coords.x)++;
 	    }
 	    (coords.y)++;
-	    for (i = 0; i < 3; i++) {
+	    for (i = 0; i < 3; i++)
+	    {
+	        (coords.x)--;
+	        (coords.y)++;
 	        disp_write(coords, D_OFF);
-	        (coords.y)--;
+	    }
+	    for (i = 0; i < 4; i++)
+	    {
+            (coords.x)++;
+	        if(i!=2)
+	        {
+	            disp_write(coords, D_OFF);
+	        }
 	    }
 	    break;
 	case '5':
-	    for (i = 0; i < 5; i++) {
+	    for (i = 0; i < 5; i++)
+	    {
 	        disp_write(coords, D_OFF);
 	        (coords.x)++;
 	    }
-	    for (i = 0; i < 3; i++) {
-	        disp_write(coords, D_OFF);
+	    (coords.x)--;
+	    for (i = 0; i < 3; i++)
+	    {
 	        (coords.y)--;
-	    }
-	    for (i = 0; i < 5; i++) {
 	        disp_write(coords, D_OFF);
+	    }
+	    for (i = 0; i < 4; i++)
+	    {
 	        (coords.x)--;
-	    }
-	    for (i = 0; i < 3; i++) {
 	        disp_write(coords, D_OFF);
+	    }
+	    for (i = 0; i < 3; i++)
+	    {
 	        (coords.y)--;
-	    }
-	    for (i = 0; i < 5; i++) {
 	        disp_write(coords, D_OFF);
+	    }
+	    for (i = 0; i < 4; i++)
+	    {
 	        (coords.x)++;
+	        disp_write(coords, D_OFF);
 	    }
 	    break;
 	case '6':
-	    (coords.x) += 4;
-	    for (i = 0; i < 7; i++) {
-	        disp_write(coords, D_OFF);
-	        (coords.y)--;
-	    }
-	    for (i = 0; i < 5; i++) {
-	        disp_write(coords, D_OFF);
-	        (coords.x)--;
-	    }
-	    for (i = 0; i < 3; i++) {
-	        disp_write(coords, D_OFF);
-	        (coords.y)++;
-	    }
-	    for (i = 0; i < 5; i++) {
+	    for (i = 0; i < 5; i++)
+	    {
 	        disp_write(coords, D_OFF);
 	        (coords.x)++;
+	    }
+	    (coords.x)--;
+	    for (i = 0; i < 3; i++)
+	    {
+	        (coords.y)--;
+	        disp_write(coords, D_OFF);
+	    }
+	    for (i = 0; i < 4; i++)
+	    {
+	        (coords.x)--;
+	        disp_write(coords, D_OFF);
+	    }
+	    for (i = 0; i < 2; i++)
+	    {
+	        (coords.y)++;
+	        disp_write(coords, D_OFF);
+	    }
+	    (coords.y)-=2;
+	    for (i = 0; i < 3; i++)
+	    {
+	        (coords.y)--;
+	        disp_write(coords, D_OFF);
+	    }
+	    for (i = 0; i < 4; i++)
+	    {
+	        (coords.x)++;
+	        disp_write(coords, D_OFF);
 	    }
 	    break;
 	case '7':
-	    for (i = 0; i < 5; i++) {
+	    for (i = 0; i < 5; i++)
+	    {
 	        disp_write(coords, D_OFF);
 	        (coords.x)++;
-	    }
-	    for (i = 0; i < 7; i++) {
-	        disp_write(coords, D_OFF);
 	        (coords.y)--;
+	    }
+	    (coords.x)--;
+	    disp_write(coords, D_OFF);
+	    (coords.y)--;
+	    for (i = 0; i < 4; i++)
+	    {
+	        disp_write(coords, D_OFF);
+	        (coords.x)--;
 	    }
 	    break;
 	case '8':
-	    (coords.x) += 4;
-	    for (i = 0; i < 7; i++) {
-	        disp_write(coords, D_OFF);
-	        (coords.y)--;
-	    }
-	    for (i = 0; i < 5; i++) {
-	        disp_write(coords, D_OFF);
-	        (coords.x)--;
-	    }
-	    for (i = 0; i < 3; i++) {
-	        disp_write(coords, D_OFF);
-	        (coords.y)++;
-	    }
-	    for (i = 0; i < 5; i++) {
-	        disp_write(coords, D_OFF);
+	    for (i = 0; i < 3; i++)
+	    {
 	        (coords.x)++;
-	    }
-	    for (i = 0; i < 3; i++) {
 	        disp_write(coords, D_OFF);
+	    }
+	    (coords.x)++;
+	    for (i = 0; i < 5; i++)
+	    {
 	        (coords.y)--;
-	    }
-	    for (i = 0; i < 5; i++) {
 	        disp_write(coords, D_OFF);
+	    }
+	    (coords.y)--;
+	    for (i = 0; i < 3; i++)
+	    {
 	        (coords.x)--;
+	        disp_write(coords, D_OFF);
+	    }
+	    (coords.x)--;
+	    for (i = 0; i < 5; i++)
+	    {
+	        (coords.y)++;
+	        disp_write(coords, D_OFF);
+	    }
+	    (coords.y)-=2;
+	    for (i = 0; i < 3; i++)
+	    {
+	        (coords.x)++;
+	        disp_write(coords, D_OFF);
 	    }
 	    break;
 	case '9':
-	    for (i = 0; i < 5; i++) {
+	    for (i = 0; i < 4; i++)
+	    {
 	        disp_write(coords, D_OFF);
 	        (coords.x)++;
 	    }
-	    for (i = 0; i < 3; i++) {
-	        disp_write(coords, D_OFF);
-	        (coords.y)--;
+	    for (i = 0; i < 5; i++)
+	    {
+	    	(coords.y)--;
+	        if(i!=2)
+	        {
+	            disp_write(coords, D_OFF);
+	        }
 	    }
-	    for (i = 0; i < 5; i++) {
-	        disp_write(coords, D_OFF);
+	    (coords.y)--;
+	    for (i = 0; i < 3; i++)
+	    {
 	        (coords.x)--;
-	    }
-	    for (i = 0; i < 7; i++) {
 	        disp_write(coords, D_OFF);
+	    }
+	    (coords.x)--;
+	    for (i = 0; i < 2; i++)
+	    {
 	        (coords.y)++;
+	        disp_write(coords, D_OFF);
+	    }
+	    (coords.y)++;
+	    for (i = 0; i < 3; i++)
+	    {
+	        (coords.x)++;
+	        disp_write(coords, D_OFF);
 	    }
 	    break;
 	}
