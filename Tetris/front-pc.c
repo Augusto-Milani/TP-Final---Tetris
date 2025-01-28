@@ -299,7 +299,7 @@ static void TetrisPlay() {
 					//TODO backend (pieza gira izq)***************
 				}
 				else if((argument.event).mouse.button == 2) {	//Click derecho.
-					rotateClockWise();
+					rotateClockwise();
 				}
 				break;
 

@@ -73,7 +73,7 @@ void nextPiece() {
 
 
 // Rotate function
-void rotateClockWise() {
+void rotateClockwise() {
     int i, j, aux;
     aux = PIECE_SIZE(nextPieceID);
     
@@ -220,15 +220,20 @@ void shiftPieceRight() {
 	aux = PIECE_SIZE(nextPieceID);
 
     // Prevent shifting if the piece cannot move further right
-    if (x_coord + aux >= BOARD_WIDTH) {
+    /*if (x_coord + aux >= BOARD_WIDTH) {
         return;
-    }
+    }*/
+	
     for(i = y_coord + aux-1; i >= y_coord; i--) {
 		for(j = x_coord; j <= x_coord + aux-1; j++) {
 			if((j >= BOARD_HEIGHT-1  &&  board[i][j] == 1)	||	(board[i][j + 1] == 2  &&  board[i][j] == 1)) {
 				return;
 			}
-			else if (board[i+1][j] == 2 && board[i][j]) { //are we resting against a piece? then don't shift sideways.
+			else if (board[i+1][j] == 2 && board[i][j]) { 	//are we resting against a piece? then don't shift sideways.
+				return;										//this could honestly be part of the upper "if", but it'd look
+			}												//too crowded for my taste.
+
+			else if (board[i][BOARD_WIDTH - 1]) { 			//only stop the piece from shifting if it hit the board limit
 				return;
 			}
 		}
@@ -263,13 +268,16 @@ void shiftPieceLeft() {
     for(i = y_coord + aux-1; i >= y_coord; i--) {
 		for(j = x_coord; j <= x_coord + aux-1; j++) {
 
-			if((x_coord == 0)	||	(board[i][j - 1] == 2  &&  board[i][j] == 1)) {
+			if(/*(x_coord == 0)	||	*/(board[i][j - 1] == 2  &&  board[i][j] == 1)) {
 			/*for the given coordinates (i,j), checks if at left-most coord OR if a block of the piece is against an 
 			established block. Adding a rule to check if we hit something before moving could fix the 
 			"deleting established pieces" glitch. JS*/
 				return;
 			}
 			else if (board[i+1][j] == 2 && board[i][j]) { //are we resting against a piece? then don't shift sideways.
+				return;
+			}
+			else if (board[i][0]) { 			//only stop the piece from shifting if it hit the board limit
 				return;
 			}
 

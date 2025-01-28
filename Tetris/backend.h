@@ -13,7 +13,7 @@
 
 void nextPiece();
 
-void rotateClockWise();
+void rotateClockwise();
 
 void printMatrix_3by3(int[][3]);
 void printMatrix_4by4(int[][4]);
