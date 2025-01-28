@@ -24,6 +24,7 @@ void shiftPieceDown();
 void shiftPieceLeft();
 void shiftPieceRight();
 void collision();
+void collisionTest();
 
 void initBoard();
 

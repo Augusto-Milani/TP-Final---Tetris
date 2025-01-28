@@ -228,6 +228,9 @@ void shiftPieceRight() {
 			if((j >= BOARD_HEIGHT-1  &&  board[i][j] == 1)	||	(board[i][j + 1] == 2  &&  board[i][j] == 1)) {
 				return;
 			}
+			else if (board[i+1][j] == 2 && board[i][j]) { //are we resting against a piece? then don't shift sideways.
+				return;
+			}
 		}
 	}
 
@@ -259,9 +262,17 @@ void shiftPieceLeft() {
     // Prevent shifting if the piece cannot move further left
     for(i = y_coord + aux-1; i >= y_coord; i--) {
 		for(j = x_coord; j <= x_coord + aux-1; j++) {
+
 			if((x_coord == 0)	||	(board[i][j - 1] == 2  &&  board[i][j] == 1)) {
+			/*for the given coordinates (i,j), checks if at left-most coord OR if a block of the piece is against an 
+			established block. Adding a rule to check if we hit something before moving could fix the 
+			"deleting established pieces" glitch. JS*/
 				return;
 			}
+			else if (board[i+1][j] == 2 && board[i][j]) { //are we resting against a piece? then don't shift sideways.
+				return;
+			}
+
 		}
 	}
 
@@ -314,3 +325,34 @@ void collision() {
 	nextPiece();
 }
 
+void collisionTest (void) {
+	int i, j, k, flag;
+	for(i = y_coord + 2; i >= y_coord; i--) {
+		for(j = x_coord; j <= x_coord + 2; j++) {
+			if(board[i][j] == 1) {
+				board[i][j]++;
+			}
+		}
+	}
+
+	for(i = y_coord + 2; i >= y_coord; i--) {
+		for(flag=0, j=0; j < BOARD_WIDTH; j++) {
+			if(board[i][j] != 2) {
+				flag++;
+			}
+		}
+		if(!flag) {
+			for(k = i; k > 0; k--) {
+				for(j=0; j < BOARD_WIDTH; j++) {
+					board[k][j] = board[k-1][j];
+				}
+			}
+			for(j=0; j < BOARD_WIDTH; j++) {
+				board[0][j] = 0;
+			}
+
+			i++;
+			lines++;
+		}
+	}
+}
