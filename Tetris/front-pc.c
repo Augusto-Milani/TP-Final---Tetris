@@ -293,7 +293,7 @@ static void TetrisPlay() {
 				}
 				break;
 
-			case ALLEGRO_EVENT_MOUSE_BUTTON_DOWN:
+			/*case ALLEGRO_EVENT_MOUSE_BUTTON_DOWN:
 				al_play_sample(argument.sfx6, 1.0, 0.0, 1.0, ALLEGRO_PLAYMODE_ONCE, NULL);
 				if((argument.event).mouse.button == 1) {	//Click izquierdo.
 					//TODO backend (pieza gira izq)***************
@@ -301,7 +301,7 @@ static void TetrisPlay() {
 				else if((argument.event).mouse.button == 2) {	//Click derecho.
 					rotateClockwise();
 				}
-				break;
+				break;*/
 
 			case ALLEGRO_EVENT_KEY_CHAR:
 				al_get_keyboard_state(&(argument.ks));
@@ -328,6 +328,9 @@ static void TetrisPlay() {
 						if(false) {
 							al_play_sample(argument.sfx8, 1.0, 0.0, 1.0, ALLEGRO_PLAYMODE_ONCE, NULL);
 						}
+					}
+					else if(al_key_down(&(argument.ks), ALLEGRO_KEY_SPACE)) {
+						rotateClockwise();
 					}
 				}
 				break;

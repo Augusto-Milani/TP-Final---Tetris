@@ -268,10 +268,8 @@ void shiftPieceLeft() {
     for(i = y_coord + aux-1; i >= y_coord; i--) {
 		for(j = x_coord; j <= x_coord + aux-1; j++) {
 
-			if(/*(x_coord == 0)	||	*/(board[i][j - 1] == 2  &&  board[i][j] == 1)) {
-			/*for the given coordinates (i,j), checks if at left-most coord OR if a block of the piece is against an 
-			established block. Adding a rule to check if we hit something before moving could fix the 
-			"deleting established pieces" glitch. JS*/
+			if((board[i][j - 1] == 2  &&  board[i][j] == 1)) {
+			//for the given coordinates (i,j), checks if part of the piece is against an established block.
 				return;
 			}
 			else if (board[i+1][j] == 2 && board[i][j]) { //are we resting against a piece? then don't shift sideways.
