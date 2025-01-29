@@ -80,11 +80,20 @@ void rotateClockwise() {
     // Prevent rotation if there's an obstacle
     for (i = y_coord; i < y_coord + aux; i++) {
         for (j = x_coord; j < x_coord + aux; j++) {
-        	if(board[i][j] == 2 && board[aux-1-j][i] == 1) {	// Note: 2 is static, 1 isn't
+        	if(board[i][j] == 2 && board[aux-1-j][i] == 1) {	// Note: 2 is static block, 1 is moving block
         		return;
         	}
         }
     }
+
+	//prevent the piece from rotating if any of its solid blocks will end up outside the boundaries
+	for (i = y_coord; i < y_coord + aux; i++) {
+        for (j = x_coord; j < x_coord + aux; j++) {
+			if (j >= BOARD_WIDTH) { //TO:DO rotating against the left margin is still allowed
+				return;
+			}
+		}
+	}
 
     // Rotates
     for (i = 0; i < aux; i++) {
