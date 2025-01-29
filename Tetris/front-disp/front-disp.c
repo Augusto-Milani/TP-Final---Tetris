@@ -13,9 +13,9 @@
 #include "Libs/disdrv.h"
 #include "Libs/joydrv.h"
 #include "letras.h"
-
 #define MAX_HEIGHT 16
 #define MAX_WEIGHT 16
+
 
 enum {PLAY=1,TOP,STOP};
 
@@ -169,9 +169,43 @@ static void play (void)
 
 static void playini(void)
 {
+	dcoord_t coord;
+	(coord.x)=14;
+	char i;
 	disp_clear();
 	disp_update();
-	dcoord_t coord;
+	for(i=0;i<42;i++)
+	{
+		(coord.y)=9;
+		letras_on(coord,'L');
+		(coord.x)+=4;
+		letras_on(coord,'E');
+		(coord.x)+=4;
+		letras_on(coord,'V');
+		(coord.x)+=5;
+		letras_on(coord,'E');
+		(coord.x)+=4;
+		letras_on(coord,'L');
+		(coord.x)+=4;
+		(coord.y)=10;
+		letras_on(coord,'1');
+		usleep(200000);
+		(coord.x)-=21;
+		(coord.y)=9;
+		letras_off(coord,'L');
+		(coord.x)+=4;
+		letras_off(coord,'E');
+		(coord.x)+=4;
+		letras_off(coord,'V');
+		(coord.x)+=5;
+		letras_off(coord,'E');
+		(coord.x)+=4;
+		letras_off(coord,'L');
+		(coord.x)+=4;
+		(coord.y)=10;
+		letras_off(coord,'1');
+		(coord.x)-=22;
+	}
 	(coord.y)=0;
 	(coord.x)=10;
 	while(coord.y<MAX_HEIGHT)
