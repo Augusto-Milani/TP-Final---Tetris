@@ -89,7 +89,7 @@ void rotateClockwise() {
 	//prevent the piece from rotating if any of its solid blocks will end up outside the boundaries
 	for (i = y_coord; i < y_coord + aux; i++) {
         for (j = x_coord; j < x_coord + aux; j++) {
-			if (j >= BOARD_WIDTH) { //TO:DO rotating against the left margin is still allowed
+			if (board[i][j] == 1 &&  ((aux - 1 - (i-y_coord) + x_coord) < 0 || (aux - 1 - (i-y_coord) + x_coord) >= BOARD_WIDTH)) { //If there's a moving block, 
 				return;
 			}
 		}
@@ -98,7 +98,7 @@ void rotateClockwise() {
     // Rotates
     for (i = 0; i < aux; i++) {
     	for (j = 0; j < aux; j++) {
-    		board[i + y_coord][j + x_coord] = status[aux-1-j][i];	//Rotates any 4x4 matrix of ints, clockwise
+    		board[i + y_coord][j + x_coord] = status[aux-1-j][i];	//Rotates any matrix of ints, clockwise
 
     	}
     }
