@@ -330,6 +330,7 @@ static void TetrisPlay() {
 						}
 					}
 					else if(al_key_down(&(argument.ks), ALLEGRO_KEY_SPACE)) {
+						argument.redraw = true;
 						rotateClockwise();
 					}
 				}

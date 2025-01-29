@@ -89,7 +89,12 @@ void rotateClockwise() {
 	//prevent the piece from rotating if any of its solid blocks will end up outside the boundaries
 	for (i = y_coord; i < y_coord + aux; i++) {
         for (j = x_coord; j < x_coord + aux; j++) {
-			if (board[i][j] == 1 &&  ((aux - 1 - (i-y_coord) + x_coord) < 0 || (aux - 1 - (i-y_coord) + x_coord) >= BOARD_WIDTH)) { //If there's a moving block, 
+			if (board[i][j] == 1 &&  ((aux - 1 - (i-y_coord) + x_coord) < 0 || (aux - 1 - (i-y_coord) + x_coord) >= BOARD_WIDTH)) { 
+				/* This statement deserves an explanation. for every moving block, check IF said block would fall outside the
+				boundaries of the board if it were rotated. (i-y_coord) gets the position of the block relative to the top left
+				corner. (aux - 1 - (i-y_coord)) is where the piece should land in the X axis, relative to the top left corner.
+				by adding x_coord, we convert to absolute coordinates. With that done, we can directly check if this value falls
+				outside of the allowed range of [0; BOARD_WIDTH).*/
 				return;
 			}
 		}
@@ -221,87 +226,62 @@ void shiftPieceDown() {
     y_coord++;
 }
 
-
-
-
 void shiftPieceRight() {
-	int i, j, aux;
-	aux = PIECE_SIZE(nextPieceID);
+    int i, j, aux;
+    aux = PIECE_SIZE(nextPieceID);
 
     // Prevent shifting if the piece cannot move further right
-    /*if (x_coord + aux >= BOARD_WIDTH) {
-        return;
-    }*/
-	
-    for(i = y_coord + aux-1; i >= y_coord; i--) {
-		for(j = x_coord; j <= x_coord + aux-1; j++) {
-			if((j >= BOARD_HEIGHT-1  &&  board[i][j] == 1)	||	(board[i][j + 1] == 2  &&  board[i][j] == 1)) {
-				return;
-			}
-			else if (board[i+1][j] == 2 && board[i][j]) { 	//are we resting against a piece? then don't shift sideways.
-				return;										//this could honestly be part of the upper "if", but it'd look
-			}												//too crowded for my taste.
+    for (i = y_coord + aux - 1; i >= y_coord; i--) {
+        for (j = x_coord + aux - 1; j >= x_coord; j--) {
+			if (board[i][j] == 1) {
+	            if (board[i][j + 1] == 2 || j + 1 >= BOARD_WIDTH) { 
+					//check if active cells can move right without hitting the edge or another piece
+    	            return; 
+				}
+            }
+        }
+    }
 
-			else if (board[i][BOARD_WIDTH - 1]) { 			//only stop the piece from shifting if it hit the board limit
-				return;
-			}
-		}
-	}
-
-    // Shifts
-    for (i = y_coord + aux-1; i >= y_coord; i--) { // Starts from the bottom row, right column
-		for (j = x_coord + aux-1; j >= x_coord; j--) {
-			if(board[i][j] == 1) {
-				board[i][j + 1] = board[i][j];
-			}
-			if(board[i][j] != 2) {
-				board[i][j] = 0;
-			}
-		}
-	}
-    for (i = y_coord; i < y_coord + aux; i++) {
-		board[i][x_coord] = 0;
-	}
+    // Shift the piece right
+    for (i = y_coord + aux - 1; i >= y_coord; i--) {
+        for (j = x_coord + aux - 1; j >= x_coord; j--) {
+            if (board[i][j] == 1) { // Only move if it's part of the active piece
+                board[i][j + 1] = board[i][j]; //Shift piece to the right
+                board[i][j] = 0; // Clear original position
+            }
+        }
+    }
 
     x_coord++;
 }
 
-
-
-
 void shiftPieceLeft() {
-	int i, j, aux;
-	aux = PIECE_SIZE(nextPieceID);
+    int i, j, aux;
+    aux = PIECE_SIZE(nextPieceID);
 
     // Prevent shifting if the piece cannot move further left
-    for(i = y_coord + aux-1; i >= y_coord; i--) {
-		for(j = x_coord; j <= x_coord + aux-1; j++) {
-
-			if((board[i][j - 1] == 2  &&  board[i][j] == 1)) {
-			//for the given coordinates (i,j), checks if part of the piece is against an established block.
-				return;
-			}
-			else if (board[i+1][j] == 2 && board[i][j]) { //are we resting against a piece? then don't shift sideways.
-				return;
-			}
-			else if (board[i][0]) { 			//only stop the piece from shifting if it hit the board limit
-				return;
-			}
-
+    for (i = y_coord + aux - 1; i >= y_coord; i--) {
+        for (j = x_coord; j < x_coord + aux; j++) {
+            if (board[i][j] == 1) {
+                if (j - 1 < 0 || board[i][j - 1] == 2) { 
+					//check if active cells can move left without hitting the edge or another piece
+                    return;
+                }
+            }
 		}
-	}
+    }
 
-    // Shifts
-    for (i = y_coord + aux-1; i >= y_coord; i--) { // Starts from the bottom row, left column
-		for (j = x_coord; j <= x_coord + aux-1; j++) {
-			board[i][j - 1] = board[i][j];
-		}
-	}
-	for (i = y_coord; i < y_coord + aux; i++) {
-		board[i][x_coord + aux-1] = 0;
-	}
+    // Shift the piece left
+    for (i = y_coord + aux - 1; i >= y_coord; i--) {
+        for (j = x_coord; j < x_coord + aux; j++) {
+            if (board[i][j] == 1) { // Only move if it's part of the active piece
+                board[i][j - 1] = board[i][j]; // Shift piece to the left
+                board[i][j] = 0; // Clear old position
+            }
+        }
+    }
 
-	 x_coord--;
+    x_coord--;
 }
 
 
@@ -314,7 +294,15 @@ void collision() {
 			}
 		}
 	}
+//This is just for testing purposes, top function is more efficient. 
 
+	/*for(i = BOARD_WIDTH - 1; i >= 0; i--) {
+			for(j = 0; j < BOARD_HEIGHT ; j++) {
+			if(board[i][j] == 1) {
+				board[i][j]++;
+			}
+		}
+	}*/
 	for(i = y_coord + 2; i >= y_coord; i--) {
 		for(flag=0, j=0; j < BOARD_WIDTH; j++) {
 			if(board[i][j] != 2) {
