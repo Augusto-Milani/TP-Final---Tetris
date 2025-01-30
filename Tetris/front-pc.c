@@ -307,7 +307,9 @@ static void TetrisPlay() {
 				al_get_keyboard_state(&(argument.ks));
 
 				if(al_key_down(&(argument.ks), ALLEGRO_KEY_ESCAPE)) {
+					argument.redraw = true;
 					TetrisPause();
+					
 				}
 
 				else {
