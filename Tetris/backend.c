@@ -20,29 +20,6 @@ void* pieces[PIECES_TETRIS] = {(void*)T, (void*)J, (void*)Z, (void*)O, (void*)S,
 static int status[4][4];
 static int nextPieceID;
 
-/*
-int main() {
-    srand(time(NULL)); //set random seed
-
-    initBoard();
-
-    printBoard();
-    nextPiece();
-    printBoard();
-
-    shiftPieceDown();
-    printBoard();
-    shiftPieceRight();
-        printBoard();
-        shiftPieceLeft();
-            printBoard();
-
-
-}
-
-
-*/
-
 //initialize the board, 20*10 size
 void initBoard() {
 	int i, j;
@@ -57,14 +34,7 @@ void nextPiece() {
 	x_coord = (int)BOARD_WIDTH/2 - 2;
 	y_coord = 0;
 
-    nextPieceID = rand() % PIECES_TETRIS;	 //Tetris has 7 pieces
-
-    if(nextPieceID < PIECE_3x3_AUX) {
-        printMatrix_3by3(pieces[nextPieceID]);
-    }
-    else {
-        printMatrix_4by4(pieces[nextPieceID]);
-    }
+    nextPieceID = rand() % PIECES_TETRIS;	 //generates a random number between 0 and 1 less than the defined pieces
     addPiece(nextPieceID);
 
 
@@ -78,10 +48,15 @@ void rotateClockwise() {
     aux = PIECE_SIZE(nextPieceID);
     
     // Prevent rotation if there's an obstacle
-    for (i = y_coord; i < y_coord + aux; i++) {
-        for (j = x_coord; j < x_coord + aux; j++) {
-        	if(board[i][j] == 2 && board[aux-1-j][i] == 1) {	// Note: 2 is static block, 1 is moving block
-        		return;
+    for (i = 0; i < aux; i++) {
+        for (j = 0; j < aux; j++) {
+        	if((board[i + y_coord][j + x_coord] == 1) && (board[i + y_coord][aux - 1 - j + x_coord] == 2)) {
+				//DO NOT touch, took me an hour to get those statements right.
+				//for every active cell in play, check if the coordinate where it should land is already filled by an old piece.
+				//if so, you can't rotate here.
+
+        		//printf("got here!\n");  this is a testament to how desperate i got. 
+				return;
         	}
         }
     }
@@ -220,7 +195,9 @@ void shiftPieceDown() {
         }
     }
     for (j = x_coord; j < x_coord + aux; j++) {
-        board[y_coord][j] = 0;
+        if (board[y_coord][j] != 2) {
+			board[y_coord][j] = 0;
+		}			
     }
 
     y_coord++;
