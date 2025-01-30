@@ -12,10 +12,10 @@ int tetromino[7];
 
 
 static int x_coord, y_coord;
-void* pieces[PIECES_TETRIS] = {(void*)T, (void*)J, (void*)Z, (void*)O, (void*)S, (void*)L, (void*)I}; //This array holds pointers to all pieces in game, it has to be global for ease of coding
-// IMPORTANT: The arrangment is crutial for deciding if it's a 3x3 piece or 4x4 piece.
-// 			  We use 5 pieces of 3x3 and the last two are 4x4.
-
+void* pieces[PIECES_TETRIS] = {(void*)T, (void*)J, (void*)Z, (void*)O, (void*)S, (void*)L, (void*)I}; 
+//This array holds a pointer to each piece, it was made global as most functions use it in some way.
+//The order is not trivial, there's a complementary macro to this array that stores the size of each piece, to make the functions
+//accept more than a single size for matrix. We decided this was easier than passing around the size of each piece as an arg. 
 
 static int status[4][4];
 static int nextPieceID;
@@ -271,15 +271,7 @@ void collision() {
 			}
 		}
 	}
-//This is just for testing purposes, top function is more efficient. 
 
-	/*for(i = BOARD_WIDTH - 1; i >= 0; i--) {
-			for(j = 0; j < BOARD_HEIGHT ; j++) {
-			if(board[i][j] == 1) {
-				board[i][j]++;
-			}
-		}
-	}*/
 	for(i = y_coord + 2; i >= y_coord; i--) {
 		for(flag=0, j=0; j < BOARD_WIDTH; j++) {
 			if(board[i][j] != 2) {
@@ -303,36 +295,4 @@ void collision() {
 	tetromino[nextPieceID]++;
 	score++;
 	nextPiece();
-}
-
-void collisionTest (void) {
-	int i, j, k, flag;
-	for(i = y_coord + 2; i >= y_coord; i--) {
-		for(j = x_coord; j <= x_coord + 2; j++) {
-			if(board[i][j] == 1) {
-				board[i][j]++;
-			}
-		}
-	}
-
-	for(i = y_coord + 2; i >= y_coord; i--) {
-		for(flag=0, j=0; j < BOARD_WIDTH; j++) {
-			if(board[i][j] != 2) {
-				flag++;
-			}
-		}
-		if(!flag) {
-			for(k = i; k > 0; k--) {
-				for(j=0; j < BOARD_WIDTH; j++) {
-					board[k][j] = board[k-1][j];
-				}
-			}
-			for(j=0; j < BOARD_WIDTH; j++) {
-				board[0][j] = 0;
-			}
-
-			i++;
-			lines++;
-		}
-	}
 }
