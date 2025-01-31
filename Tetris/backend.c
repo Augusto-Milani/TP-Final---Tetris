@@ -28,6 +28,9 @@ void initBoard() {
             board[i][j] = 0;
         }
     }
+    leaderBoard("------", 0, 0, 1);
+    
+    
 }
 
 void nextPiece() {
@@ -43,7 +46,7 @@ void nextPiece() {
     addPiece(nextPieceID);
 
     mod = 0;
-    printf("Score: %d\n", score);
+    //printf("Score: %d\n", score);
 }
 
 
@@ -53,19 +56,38 @@ void rotateClockwise() {
     int i, j, aux;
     aux = PIECE_SIZE(nextPieceID);
     
-    // Prevent rotation if there's an obstacle
-    for (i = 0; i < aux; i++) {
+    // OLD Prevent rotation if there's an obstacle
+    /*for (i = 0; i < aux; i++) {
         for (j = 0; j < aux; j++) {
-        	if((board[i + y_coord][j + x_coord] == 1) && (board[i + y_coord][aux - 1 - j + x_coord] == 2)) {
+
+            //Testing
+            printf("Coords being checked are (%d; %d)\n", (j + x_coord), (i + y_coord));
+            if((board[i + y_coord][j + x_coord] == 1)) printf("First statement holds true\n");
+            if(board[aux - 1 - j + x_coord][i + y_coord] == 2) printf("Second statement holds true\n");
+            //End testing
+
+        	if((board[i + y_coord][j + x_coord] == 1) && (board[aux - 1 - (j + x_coord)][i + y_coord] == 2)) {
 				//DO NOT touch, took me an hour to get those statements right.
 				//for every active cell in play, check if the coordinate where it should land is already filled by an old piece.
 				//if so, you can't rotate here.
 
-        		//printf("got here!\n");  this is a testament to how desperate i got. 
+        		printf("got here!\n");  //this is a testament to how desperate i got. 
 				return;
         	}
         }
+    }*/
+
+
+//Prevent rotation if there's an obstacle (math before was wrong but i'm too attached to that code to delete it)
+for (i = y_coord; i < y_coord + aux; i++) {
+    for (j = x_coord; j < x_coord + aux; j++) {
+        if(board[i][j] == 1) {
+            if(board[(aux - (j - x_coord) + y_coord)][(aux - 1 - (i-y_coord) + x_coord)] == 2) {
+                return;
+            }
+        }
     }
+}
 
 	//prevent the piece from rotating if any of its solid blocks will end up outside the boundaries
 	for (i = y_coord; i < y_coord + aux; i++) {
@@ -276,9 +298,10 @@ void shiftPieceLeft() {
     x_coord--;
 }
 
-
+//this function handles all the logic needed before every cycle starts with a new piece. 
+//it's called when, you guessed it, a piece collides with something.
 void collision() {
-    printf("%d\n", board[19][0]);
+
 	int i, j, k, flag;
 
     //Cell upgrading loop
@@ -321,7 +344,6 @@ void collision() {
     }
     
     //Point math for lane clearing
-    printf("Current lines: %d\n", currentLines);
     switch(currentLines) {
         case 1:
             score += (40 * (level+1));
@@ -352,5 +374,17 @@ void collision() {
 void gameOver(void) {
     printf("Womp womp\nYour score was %d\n", score);
     printf("level reached: %d\n", lines);
+    
 }
 
+void leaderBoard(char inputName[6], unsigned long int inputScore, unsigned int inputLevel, int firstGame) {
+    if(firstGame) {
+        struct player {
+        char name[6];
+        unsigned long int score;
+        unsigned int level;
+        };
+        struct player leaderBoard[3];
+    }
+    
+}
