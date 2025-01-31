@@ -9,9 +9,9 @@
 
 #include "letras.h"
 #define MAX_HEIGHT 16
-#define MAX_WEIGHT 16
+#define MAX_WIDTH 16
 
-#define CHECK if((coords.x)<MAX_WEIGHT && (coords.y)<MAX_HEIGHT)
+#define CHECK if((coords.x)<MAX_WIDTH && (coords.y)<MAX_HEIGHT)
 
 void letras_on (dcoord_t coords,char let)
 {
