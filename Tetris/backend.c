@@ -28,6 +28,9 @@ void initBoard() {
             board[i][j] = 0;
         }
     }
+    leaderBoard("------", 0, 0, 1);
+    
+    
 }
 
 void nextPiece() {
@@ -295,7 +298,8 @@ void shiftPieceLeft() {
     x_coord--;
 }
 
-
+//this function handles all the logic needed before every cycle starts with a new piece. 
+//it's called when, you guessed it, a piece collides with something.
 void collision() {
 
 	int i, j, k, flag;
@@ -340,7 +344,6 @@ void collision() {
     }
     
     //Point math for lane clearing
-    //printf("Current lines: %d\n", currentLines);
     switch(currentLines) {
         case 1:
             score += (40 * (level+1));
@@ -371,5 +374,17 @@ void collision() {
 void gameOver(void) {
     printf("Womp womp\nYour score was %d\n", score);
     printf("level reached: %d\n", lines);
+    
 }
 
+void leaderBoard(char inputName[6], unsigned long int inputScore, unsigned int inputLevel, int firstGame) {
+    if(firstGame) {
+        struct player {
+        char name[6];
+        unsigned long int score;
+        unsigned int level;
+        };
+        struct player leaderBoard[3];
+    }
+    
+}

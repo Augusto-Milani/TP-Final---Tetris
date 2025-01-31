@@ -26,6 +26,6 @@ void shiftPieceRight();
 void collision();
 void initBoard();
 void gameOver();
-
+void leaderBoard(char[6], unsigned long int, unsigned int, int);
 
 #endif /* TETRIS_BACKEND_H_ */
