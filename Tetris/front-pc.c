@@ -40,11 +40,10 @@ bool alive = true;
 
 static int TITLE_WIDTH, TITLE_HEIGHT, BACK_WIDTH, BACK_HEIGHT,
 			TILE_WIDTH, TILE_HEIGHT, GAMEOVER_WIDTH, GAMEOVER_HEIGHT;
-static int dx, dy, move;	//Centrar imagen en pantalla.
-static float scale;
+static int dx, dy;	//Centrar imagen en pantalla.
+static float scale, move_x, move_y;
 static argument_t argument;
 
-#define FONT_SIZE 27
 #define IS_LETTER(x) ( ('a'<=(x)&&(x)<='z') || ('A'<=(x)&&(x)<='Z') )
 
 static void check_init(void *pointer, const char *name);
@@ -121,9 +120,6 @@ int main() {
 	argument.sfx8 = al_load_sample("Assets/SFX 8.wav");
 	must_init(argument.sfx8, "SFX 8");
 
-	/* Fuente de Texto */
-	argument.font = al_load_font("Assets/nintendo-nes-font.ttf", FONT_SIZE, 0);
-	check_init(argument.font, "tetris font TTF");
 
 	/* Imágenes */
 	argument.background = al_load_bitmap(BACKGROUND_FILE);
@@ -176,7 +172,13 @@ int main() {
 	/* Parámetros de Desplazamiento al Imprimir */
 	dy = (SCREEN_HEIGHT - BACK_HEIGHT * scale) / 2;		//Centro la imagen verticalmente.
 	dx = (SCREEN_WIDTH - BACK_WIDTH * scale) / 2;		//Centro la imagen horizontalmente.
-	move = TILE_WIDTH*scale;	//Cada bloque (tile) es una unidad de desplazamiento.
+	move_x = TILE_WIDTH*scale;	//Cada bloque (tile) es una unidad de desplazamiento.
+	move_y = TILE_HEIGHT*scale;
+
+
+	/* Fuente de Texto */
+	argument.font = al_load_font("Assets/nintendo-nes-font.ttf", move_y, 0);
+	check_init(argument.font, "tetris font TTF");
 
 
 	/* INICIA JUEGO */
@@ -199,7 +201,7 @@ int main() {
 
 /* Reviso si Allegro se inicializó correctamente */
 static void must_init(bool test, const char *description) {
-    if(test) return;
+    if(test) return;	//TODO que pasó aca? ver git viejo
 
     printf("couldn't initialize %s.\n", description);
     exit(1);
@@ -365,30 +367,30 @@ static void playDraw() {
 	int i, j;
 	char str[7];	//TODO ver que no sea mayor al límite (%03, %06, %02)
 	sprintf(str, "%03d", lines);
-	al_draw_text(argument.font, al_map_rgb(255, 255, 255), dx + move*19, dy +move*2, 0, str);
+	al_draw_text(argument.font, al_map_rgb(255, 255, 255), dx + move_x*19, dy + move_y*2, 0, str);
 	sprintf(str, "%06d", top);
-	al_draw_text(argument.font, al_map_rgb(255, 255, 255), dx + move*24, dy +move*4, 0, str);
+	al_draw_text(argument.font, al_map_rgb(255, 255, 255), dx + move_x*24, dy + move_y*4, 0, str);
 	sprintf(str, "%06d", score);
-	al_draw_text(argument.font, al_map_rgb(255, 255, 255), dx + move*24, dy +move*7, 0, str);
+	al_draw_text(argument.font, al_map_rgb(255, 255, 255), dx + move_x*24, dy + move_y*7, 0, str);
 	sprintf(str, "%02d", level);
-	al_draw_text(argument.font, al_map_rgb(255, 255, 255), dx + move*26, dy +move*20, 0, str);
+	al_draw_text(argument.font, al_map_rgb(255, 255, 255), dx + move_x*26, dy + move_y*20, 0, str);
 
 	for(i=0 ; i<7 ; i++) {
 		sprintf(str, "%03d", tetromino[i]);
-		al_draw_text(argument.font, al_map_rgb(255, 255, 255), dx + move*6.5, dy +move*(11+i*2), 0, str);
+		al_draw_text(argument.font, al_map_rgb(255, 255, 255), dx + move_x*6.5, dy + move_y*(11+i*2), 0, str);
 	}
 
 	for(i=0 ; i<4 ; i++) {
 		for(j=0 ; j<4 ; j++) {
 		al_draw_scaled_bitmap(argument.blocks,	0, 0,	TILE_WIDTH, TILE_HEIGHT,
-				dx + move*(24+j), dy + move*(13+i),	TILE_WIDTH * scale, TILE_HEIGHT * scale,	0);
+				dx + move_x*(24+j), dy + move_y*(13+i),	TILE_WIDTH * scale, TILE_HEIGHT * scale,	0);
 		}
 	}
 	for(i=0 ; i<BOARD_HEIGHT ; i++) {
 		for(j=0 ; j<BOARD_WIDTH ; j++) {
 			if(board[i][j]) {		// Imprime si no es nulo.
 				al_draw_scaled_bitmap(argument.blocks,	0, 0,	TILE_WIDTH, TILE_HEIGHT,
-									 dx + move*(12+j), dy + move*(5+i),	TILE_WIDTH * scale, TILE_HEIGHT * scale,	0);
+									 dx + move_x*(12+j), dy + move_y*(5+i),	TILE_WIDTH * scale, TILE_HEIGHT * scale,	0);
 			}
 		}
 	}
@@ -495,11 +497,11 @@ static void pauseDraw(int index) {
 
 	al_draw_scaled_bitmap(argument.background, 0, 0, BACK_WIDTH, BACK_HEIGHT,
 									 dx, dy, BACK_WIDTH * scale, BACK_HEIGHT * scale, 0);
-	al_draw_text(argument.font, al_map_rgb(255, 255, 255), dx + move*17, dy +move*10, ALLEGRO_ALIGN_CENTRE, "PAUSE");
-	al_draw_text(argument.font, al_map_rgb(255, 255, pauseSelect[0]), dx + move*12, dy +move*21, 0, "CONTINUE");
-	al_draw_text(argument.font, al_map_rgb(255, 255, pauseSelect[1]), dx + move*12, dy +move*22, 0, "RESTART");
-	al_draw_text(argument.font, al_map_rgb(255, 255, pauseSelect[2]), dx + move*12, dy +move*23, 0, "EXIT");
-	al_draw_text(argument.font, al_map_rgb(255, 255, pauseSelect[3]), dx + move*12, dy +move*24, 0, "CLOSE");
+	al_draw_text(argument.font, al_map_rgb(255, 255, 255), dx + move_x*17, dy + move_y*10, ALLEGRO_ALIGN_CENTRE, "PAUSE");
+	al_draw_text(argument.font, al_map_rgb(255, 255, pauseSelect[0]), dx + move_x*12, dy + move_y*21, 0, "CONTINUE");
+	al_draw_text(argument.font, al_map_rgb(255, 255, pauseSelect[1]), dx + move_x*12, dy + move_y*22, 0, "RESTART");
+	al_draw_text(argument.font, al_map_rgb(255, 255, pauseSelect[2]), dx + move_x*12, dy + move_y*23, 0, "EXIT");
+	al_draw_text(argument.font, al_map_rgb(255, 255, pauseSelect[3]), dx + move_x*12, dy + move_y*24, 0, "CLOSE");
 	//El index seleccionado va a imprimir en amarillo, el resto en blanco.
 
 	al_flip_display();
@@ -581,11 +583,11 @@ static void gameoverDraw() {
 						  dx, dy,	BACK_WIDTH * scale, BACK_HEIGHT * scale, 	0);
 	char dest[19];
 	snprintf(dest, sizeof(dest), "1 %s %06d %02d", str1, score, level);
-	al_draw_text(argument.font, al_map_rgb(255, 255, 255), dx + move*7, dy +move*19, 0, dest);
+	al_draw_text(argument.font, al_map_rgb(255, 255, 255), dx + move_x*7, dy + move_y*19, 0, dest);
 	snprintf(dest, sizeof(dest), "2 %s %06d %02d", str2, score, level);
-	al_draw_text(argument.font, al_map_rgb(255, 255, 255), dx + move*7, dy +move*21, 0, dest);
+	al_draw_text(argument.font, al_map_rgb(255, 255, 255), dx + move_x*7, dy + move_y*21, 0, dest);
 	snprintf(dest, sizeof(dest), "3 %s %06d %02d", str3, score, level);
-	al_draw_text(argument.font, al_map_rgb(255, 255, 255), dx + move*7, dy +move*23, 0, dest);
+	al_draw_text(argument.font, al_map_rgb(255, 255, 255), dx + move_x*7, dy + move_y*23, 0, dest);
 
 	al_flip_display();
 }
