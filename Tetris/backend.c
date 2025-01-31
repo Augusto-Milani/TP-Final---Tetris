@@ -175,7 +175,7 @@ void addPiece(int nextPieceID) {
 
 
 
-void shiftPieceDown(int keyPressed) {
+void shiftPieceDown() {
 	int i, j, aux;
 	aux = PIECE_SIZE(nextPieceID);
 
@@ -208,9 +208,9 @@ void shiftPieceDown(int keyPressed) {
 
     y_coord++;
 
-    if(keyPressed) {
+    /*if(keyPressed) {
         score++;
-    }
+    }*/
 }
 
 void shiftPieceRight() {
