@@ -34,12 +34,12 @@ void nextPiece() {
 	x_coord = (int)BOARD_WIDTH/2 - 2;
 	y_coord = 0;
 
-    //if(mod) { //mod is a variable used only for testing purposes, kinda like a cheat code. don't tell anyone! 
+    if(mod) { //mod is a variable used only for testing purposes, kinda like a cheat code. don't tell anyone! 
         nextPieceID = 6;
-    /*}
+    }
     else {
         nextPieceID = rand() % PIECES_TETRIS;	 //generates a random number between 0 and 1 less than the defined pieces
-    }*/
+    }
     addPiece(nextPieceID);
 
     mod = 0;
