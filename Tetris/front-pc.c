@@ -282,7 +282,7 @@ static void TetrisPlay() {
 				break;
 
 			case ALLEGRO_EVENT_TIMER:
-				shiftPieceDown();	// Desplaza la pieza hacia abajo en la matriz "board".
+				shiftPieceDown(0);	// Desplaza la pieza hacia abajo en la matriz "board".
 				argument.redraw = true;
 				if(false) {
 					al_play_sample(argument.sfx8, 1.0, 0.0, 1.0, ALLEGRO_PLAYMODE_ONCE, NULL);
@@ -327,7 +327,7 @@ static void TetrisPlay() {
 					}
 					else if(al_key_down(&(argument.ks), ALLEGRO_KEY_DOWN)) {
 						argument.redraw = true;
-						shiftPieceDown();	// Desplaza la pieza hacia abajo en la matriz "board".
+						shiftPieceDown(1);	// Desplaza la pieza hacia abajo en la matriz "board".
 						if(false) {
 							al_play_sample(argument.sfx8, 1.0, 0.0, 1.0, ALLEGRO_PLAYMODE_ONCE, NULL);
 						}

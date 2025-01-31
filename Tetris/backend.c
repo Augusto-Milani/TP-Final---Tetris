@@ -7,7 +7,7 @@
 
 int board[BOARD_HEIGHT][BOARD_WIDTH];
 
-int score, top, lines, level, mod = 0;
+int score, top, lines, level = 0, mod = 0;
 int tetromino[7];
 
 
@@ -34,7 +34,7 @@ void nextPiece() {
 	x_coord = (int)BOARD_WIDTH/2 - 2;
 	y_coord = 0;
 
-    if(mod) {
+    if(mod) { //mod is a variable used only for testing purposes, kinda like a cheat code. don't tell anyone! 
         nextPieceID = 6;
     }
     else {
@@ -43,6 +43,7 @@ void nextPiece() {
     addPiece(nextPieceID);
 
     mod = 0;
+    printf("Score: %d\n", score);
 }
 
 
@@ -175,20 +176,24 @@ void addPiece(int nextPieceID) {
 
 
 
-void shiftPieceDown() {
+void shiftPieceDown(int keyPressed) {
 	int i, j, aux;
 	aux = PIECE_SIZE(nextPieceID);
 
     // Prevent shifting if the piece cannot move further down
-    for(i = y_coord + aux-1; i >= y_coord; i--) {
-		for(j = x_coord; j <= x_coord + aux-1; j++) {
-			if((i >= BOARD_HEIGHT-1  &&  board[i][j] == 1)	||	(board[i + 1][j] == 2  &&  board[i][j] == 1)) {
-				collision();
-				return;
-			}
-		}
-    }
+    for (i = y_coord + aux - 1; i >= y_coord; i--) {
+        for (j = x_coord; j <= x_coord + aux - 1; j++) {
+            // Only check cells that are part of the piece
+            if (board[i][j] == 1) {
 
+                // Check if the cell is at the bottom or above a stationary block
+                if (i >= BOARD_HEIGHT - 1 || board[i + 1][j] == 2) {                   
+                    collision();
+                    return;
+                }
+            }
+        }
+    }
     // Shifts
     for (i = y_coord + aux-1; i >= y_coord; i--) { // Starts from the bottom row
         for (j = x_coord; j <= x_coord + aux-1; j++) {
@@ -208,9 +213,9 @@ void shiftPieceDown() {
 
     y_coord++;
 
-    /*if(keyPressed) {
+    if(keyPressed) {
         score++;
-    }*/
+    }
 }
 
 void shiftPieceRight() {
@@ -273,52 +278,21 @@ void shiftPieceLeft() {
 
 
 void collision() {
+    printf("%d\n", board[19][0]);
 	int i, j, k, flag;
-	for(i = y_coord + 2; i >= y_coord; i--) {
-		for(j = x_coord; j <= x_coord + 2; j++) {
-			if(board[i][j] == 1) {
+
+    //Cell upgrading loop
+
+    for (i = 0; i < BOARD_HEIGHT; i++) {        //check the whole matrix for 1's and upgrade them to 2's every cycle.
+        for (j = 0; j < BOARD_WIDTH; j++) {
+            if(board[i][j] == 1) {
 				board[i][j]++;
 			}
-		}
-	}
-    clearLines();
-	/*for(i = y_coord + 3; i >= y_coord; i--) {
-		if (i < BOARD_HEIGHT) {
-        for(flag=0, j=0; j < BOARD_WIDTH; j++) {
-			if(board[i][j] != 2) {
-				flag++;
-			}
-		}
-		if(!flag) {
-			for(k = i; k > 0; k--) {
-				for(j=0; j < BOARD_WIDTH; j++) {
-					board[k][j] = board[k-1][j];
-				}
-			}
-			for(j=0; j < BOARD_WIDTH; j++) {
-				board[0][j] = 0;
+        }
+    }
 
-			}
+    //Lane clearing logic
 
-			i++;
-			currentLines++;
-		}
-
-	}
-    }*/
-
-    tetromino[nextPieceID]++;
-	//score++;
-	nextPiece(mod);
-}
-
-
-void gameOver(void) {
-    printf("Womp womp\nYour score was %d\n", score);
-    printf("level reached: %d\n", lines);
-}
-
-void clearLines() {
     int currentLines = 0;
     for(int i = BOARD_HEIGHT - 1; i >= 0; i--) {
         int blocksPerRow = 0; 
@@ -331,30 +305,35 @@ void clearLines() {
         }
         if(blocksPerRow == BOARD_WIDTH) { //check if we have a whole row. if so,
             currentLines++; //increase the line counter for this event (used later for points counting)
+            
             for(int k = i; k > 0; k--) {
                 for(j = 0; j < BOARD_WIDTH; j++) {  //run upwards through every row of the board, starting from the full row,
+                    
                     board[k][j] = board[k-1][j];    //and copy the line above into the current line.
+                    
                 }
-                }
+            }
             for(j = 0; j < BOARD_WIDTH; j++) {
                 board[0][j] = 0; //we excluded row 0 before so as not to read nonexistent rows, now we clear row 0 separately.
             }
-        i--;
+        i++;
         }
     }
     
+    //Point math for lane clearing
+    printf("Current lines: %d\n", currentLines);
     switch(currentLines) {
         case 1:
-            score += (40 * (level+1) * lines);
+            score += (40 * (level+1));
             break;
         case 2:
-            score += (100 * (level+1) * lines);
+            score += (100 * (level+1));
             break;
         case 3:
-            score += (300 * (level+1) * lines);
+            score += (300 * (level+1));
             break;
         case 4:
-            score += (1200 * (level+1) * lines);
+            score += (1200 * (level+1));
             break;
         default:
             break;
@@ -362,4 +341,16 @@ void clearLines() {
 	
     lines += currentLines;
     level = (lines / 10);
+	
+
+    tetromino[nextPieceID]++;
+	//score++;
+	nextPiece(mod);
 }
+
+
+void gameOver(void) {
+    printf("Womp womp\nYour score was %d\n", score);
+    printf("level reached: %d\n", lines);
+}
+

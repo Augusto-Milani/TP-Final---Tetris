@@ -20,13 +20,12 @@ void printMatrix_4by4(int[][4]);
 void printBoard();
 
 void addPiece(int);
-void shiftPieceDown();
+void shiftPieceDown(int);
 void shiftPieceLeft();
 void shiftPieceRight();
 void collision();
 void initBoard();
 void gameOver();
-void clearLines();
 
 
 #endif /* TETRIS_BACKEND_H_ */
