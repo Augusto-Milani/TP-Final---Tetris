@@ -32,7 +32,7 @@ typedef struct {
 		bool redraw;					// Bandera para dibujar.
 	} argument_t;
 
-extern int score, top, lines, level, tetromino[7];
+extern int score, top, lines, level, mod, tetromino[7];
 char str1[7] = "------";
 char str2[7] = "------";
 char str3[7] = "------";
@@ -264,7 +264,7 @@ static void menuDraw() {
 
 static void TetrisPlay() {
 	initBoard();	// Inicializa matriz en 0.
-	nextPiece();	// Selecciona aleatoriamente la siguiente pieza, y la coloca en la matriz "board".
+	nextPiece();	// Selecciona aleatoriamente la primera pieza, y la coloca en la matriz "board".
 
 	playDraw();
 	alive = true;
@@ -282,7 +282,7 @@ static void TetrisPlay() {
 				break;
 
 			case ALLEGRO_EVENT_TIMER:
-				shiftPieceDown();	// Desplaza la pieza hacia abajo en la matriz "board".
+				shiftPieceDown(0);	// Desplaza la pieza hacia abajo en la matriz "board".
 				argument.redraw = true;
 				if(false) {
 					al_play_sample(argument.sfx8, 1.0, 0.0, 1.0, ALLEGRO_PLAYMODE_ONCE, NULL);
@@ -323,10 +323,11 @@ static void TetrisPlay() {
 						al_play_sample(argument.sfx4, 1.0, 0.0, 1.0, ALLEGRO_PLAYMODE_ONCE, NULL);
 						argument.redraw = true;
 						shiftPieceRight();	// Desplaza la pieza a la derecha en la matriz "board".
+						mod = 0;
 					}
 					else if(al_key_down(&(argument.ks), ALLEGRO_KEY_DOWN)) {
 						argument.redraw = true;
-						shiftPieceDown();	// Desplaza la pieza hacia abajo en la matriz "board".
+						shiftPieceDown(1);	// Desplaza la pieza hacia abajo en la matriz "board".
 						if(false) {
 							al_play_sample(argument.sfx8, 1.0, 0.0, 1.0, ALLEGRO_PLAYMODE_ONCE, NULL);
 						}
@@ -334,6 +335,10 @@ static void TetrisPlay() {
 					else if(al_key_down(&(argument.ks), ALLEGRO_KEY_SPACE)) {
 						argument.redraw = true;
 						rotateClockwise();
+					}
+					else if(al_key_down(&(argument.ks), ALLEGRO_KEY_UP)) {
+						argument.redraw = true;
+						mod = 1;
 					}
 				}
 				break;

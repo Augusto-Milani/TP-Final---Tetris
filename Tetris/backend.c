@@ -7,7 +7,7 @@
 
 int board[BOARD_HEIGHT][BOARD_WIDTH];
 
-int score, top, lines, level;
+int score, top, lines, level, mod = 0;
 int tetromino[7];
 
 
@@ -34,10 +34,15 @@ void nextPiece() {
 	x_coord = (int)BOARD_WIDTH/2 - 2;
 	y_coord = 0;
 
-    nextPieceID = rand() % PIECES_TETRIS;	 //generates a random number between 0 and 1 less than the defined pieces
+    if(mod) {
+        nextPieceID = 6;
+    }
+    else {
+        nextPieceID = rand() % PIECES_TETRIS;	 //generates a random number between 0 and 1 less than the defined pieces
+    }
     addPiece(nextPieceID);
 
-
+    mod = 0;
 }
 
 
@@ -155,7 +160,8 @@ void addPiece(int nextPieceID) {
 			if(piece[i][j] == 1) {
 				status[i][j] = 1;
 				if(board[i][j + x_coord] == 2) {
-					//alive = false; 		//Enters game over
+					gameOver();
+                    return;
 				}
 				else {
 					//status[i][j] = piece[i][j];
@@ -169,7 +175,7 @@ void addPiece(int nextPieceID) {
 
 
 
-void shiftPieceDown() {
+void shiftPieceDown(int keyPressed) {
 	int i, j, aux;
 	aux = PIECE_SIZE(nextPieceID);
 
@@ -201,6 +207,10 @@ void shiftPieceDown() {
     }
 
     y_coord++;
+
+    if(keyPressed) {
+        score++;
+    }
 }
 
 void shiftPieceRight() {
@@ -271,9 +281,10 @@ void collision() {
 			}
 		}
 	}
-
-	for(i = y_coord + 2; i >= y_coord; i--) {
-		for(flag=0, j=0; j < BOARD_WIDTH; j++) {
+    clearLines();
+	/*for(i = y_coord + 3; i >= y_coord; i--) {
+		if (i < BOARD_HEIGHT) {
+        for(flag=0, j=0; j < BOARD_WIDTH; j++) {
 			if(board[i][j] != 2) {
 				flag++;
 			}
@@ -286,13 +297,69 @@ void collision() {
 			}
 			for(j=0; j < BOARD_WIDTH; j++) {
 				board[0][j] = 0;
+
 			}
 
 			i++;
-			lines++;
+			currentLines++;
 		}
+
 	}
-	tetromino[nextPieceID]++;
-	score++;
-	nextPiece();
+    }*/
+
+    tetromino[nextPieceID]++;
+	//score++;
+	nextPiece(mod);
+}
+
+
+void gameOver(void) {
+    printf("Womp womp\nYour score was %d\n", score);
+    printf("level reached: %d\n", lines);
+}
+
+void clearLines() {
+    int currentLines = 0;
+    for(int i = BOARD_HEIGHT - 1; i >= 0; i--) {
+        int blocksPerRow = 0; 
+        int j = 0;
+        for(j; j < BOARD_WIDTH; j++) { //check all the board for complete rows. Not the most efficient, but the safest.
+            
+            if(board[i][j] == 2) {
+                blocksPerRow++;
+            }
+        }
+        if(blocksPerRow == BOARD_WIDTH) { //check if we have a whole row. if so,
+            currentLines++; //increase the line counter for this event (used later for points counting)
+            for(int k = i; k > 0; k--) {
+                for(j = 0; j < BOARD_WIDTH; j++) {  //run upwards through every row of the board, starting from the full row,
+                    board[k][j] = board[k-1][j];    //and copy the line above into the current line.
+                }
+                }
+            for(j = 0; j < BOARD_WIDTH; j++) {
+                board[0][j] = 0; //we excluded row 0 before so as not to read nonexistent rows, now we clear row 0 separately.
+            }
+        i--;
+        }
+    }
+    
+    switch(currentLines) {
+        case 1:
+            score += (40 * (level+1) * lines);
+            break;
+        case 2:
+            score += (100 * (level+1) * lines);
+            break;
+        case 3:
+            score += (300 * (level+1) * lines);
+            break;
+        case 4:
+            score += (1200 * (level+1) * lines);
+            break;
+        default:
+            break;
+    }
+	
+    lines += currentLines;
+    level = (lines / 10);
 }
