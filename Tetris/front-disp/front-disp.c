@@ -19,7 +19,7 @@
 #define MAX_HEIGHT 16
 #define MAX_WIDTH 16
 #define SEC 200000
-#define FALL_TIME 1.0
+#define FALL_TIME 1.0//tiempo que espera para caer en sec
 
 enum {PLAY=1,TOP,STOP,CONT};
 
