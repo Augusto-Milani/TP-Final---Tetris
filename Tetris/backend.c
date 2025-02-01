@@ -266,7 +266,11 @@ void rotateClockwise() {
 for (i = y_coord; i < y_coord + aux; i++) {
     for (j = x_coord; j < x_coord + aux; j++) {
         if(board[i][j] == 1) {
-            if(board[(aux - (j - x_coord) + y_coord)][(aux - 1 - (i-y_coord) + x_coord)] > 1) {
+            int X = j - x_coord;
+            int Y = i - y_coord;
+
+            //if(board[(aux - (j - x_coord) + y_coord)][(aux - 1 - (i-y_coord) + x_coord)] > 1) { DEPRICATED
+            if (board[y_coord + X][x_coord + (aux - 1 - Y)] > 1) {
                 //for every active cell in play, check if the coordinate where it should land is already filled by an old piece.
 				//if so, you can't rotate here. The double if instead of an && is only here for readability
                 return;
