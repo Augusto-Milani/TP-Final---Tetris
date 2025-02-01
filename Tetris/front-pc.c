@@ -12,7 +12,7 @@
 #include <allegro5/allegro_audio.h>
 #include <allegro5/allegro_acodec.h>
 
-typedef struct {
+typedef struct {	// Facilito usar allegro sin pasar muchos argumentos entre funciones.
 		ALLEGRO_EVENT event;			// Evento que ocurrió (ver switch).
 		ALLEGRO_KEYBOARD_STATE ks;		// Registro del teclado.
 		ALLEGRO_EVENT_QUEUE *queue;		// Registro de eventos.
@@ -33,6 +33,7 @@ typedef struct {
 	} argument_t;
 
 extern int score, top, lines, level, mod, tetromino[7];
+extern int nextPieceID;
 char str1[7] = "------";
 char str2[7] = "------";
 char str3[7] = "------";
@@ -284,9 +285,8 @@ static void TetrisPlay() {
 				break;
 
 			case ALLEGRO_EVENT_TIMER:
-				shiftPieceDown(0);	// Desplaza la pieza hacia abajo en la matriz "board".
 				argument.redraw = true;
-				if(false) {
+				if(shiftPieceDown(0)) {		// Desplaza la pieza hacia abajo en la matriz "board". Devuelve el estado de colisión, para saber si realizar el sonido.
 					al_play_sample(argument.sfx8, 1.0, 0.0, 1.0, ALLEGRO_PLAYMODE_ONCE, NULL);
 				}
 				if(alive == false) {
@@ -329,12 +329,12 @@ static void TetrisPlay() {
 					}
 					else if(al_key_down(&(argument.ks), ALLEGRO_KEY_DOWN)) {
 						argument.redraw = true;
-						shiftPieceDown(1);	// Desplaza la pieza hacia abajo en la matriz "board".
-						if(false) {
+						if(shiftPieceDown(1)) {		// Desplaza la pieza hacia abajo en la matriz "board", sumando puntaje. Devuelve el estado de colisión, para realizar el sonido.
 							al_play_sample(argument.sfx8, 1.0, 0.0, 1.0, ALLEGRO_PLAYMODE_ONCE, NULL);
 						}
 					}
 					else if(al_key_down(&(argument.ks), ALLEGRO_KEY_SPACE)) {
+						al_play_sample(argument.sfx6, 1.0, 0.0, 1.0, ALLEGRO_PLAYMODE_ONCE, NULL);
 						argument.redraw = true;
 						rotateClockwise();
 					}
@@ -359,6 +359,7 @@ static void TetrisPlay() {
 
 /* Imprimir el Juego con la Matriz */
 static void playDraw() {
+	int aux;
 	al_clear_to_color(al_map_rgb(0, 0, 0));		// Limpio pantalla con negro.
 
 	al_draw_scaled_bitmap(argument.background, 0, 0, BACK_WIDTH, BACK_HEIGHT,
@@ -388,8 +389,46 @@ static void playDraw() {
 	}
 	for(i=0 ; i<BOARD_HEIGHT ; i++) {
 		for(j=0 ; j<BOARD_WIDTH ; j++) {
-			if(board[i][j]) {		// Imprime si no es nulo.
-				al_draw_scaled_bitmap(argument.blocks,	0, 0,	TILE_WIDTH, TILE_HEIGHT,
+			if(board[i][j] == 1) {
+				switch(nextPieceID) {		// Imprime si no es nulo.
+					case 0:
+					case 3:
+					case 6:
+						aux = 0;
+						break;
+					case 1:
+					case 4:
+						aux = 16;
+						break;
+					case 2:
+					case 5:
+						aux = 8;
+						break;
+					default:
+						break;
+				}
+				al_draw_scaled_bitmap(argument.blocks,	aux, 0,	TILE_WIDTH, TILE_HEIGHT,
+									 dx + move_x*(12+j), dy + move_y*(5+i),	TILE_WIDTH * scale, TILE_HEIGHT * scale,	0);
+			}
+			else if(board[i][j] > 1) {
+				switch(board[i][j]) {		// Imprime si no es nulo.
+					case 2:
+					case 5:
+					case 8:
+						aux = 0;
+						break;
+					case 3:
+					case 6:
+						aux = 16;
+						break;
+					case 4:
+					case 7:
+						aux = 8;
+						break;
+					default:
+						break;
+				}
+				al_draw_scaled_bitmap(argument.blocks,	aux, 0,	TILE_WIDTH, TILE_HEIGHT,
 									 dx + move_x*(12+j), dy + move_y*(5+i),	TILE_WIDTH * scale, TILE_HEIGHT * scale,	0);
 			}
 		}
@@ -451,7 +490,8 @@ static void TetrisPause() {
 						case 1:	//RESTART
 							al_play_sample_instance(argument.sample_instance);	//Reinicia música
 							argument.redraw = true;
-							//TODO backend acá?? ni idea	//Reinicia el juego
+							initBoard();				//Reinicia el juego
+							nextPiece();
 							break;
 
 						case 2:	//EXIT

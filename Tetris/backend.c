@@ -1,14 +1,13 @@
 #include "backend.h"
 #include "pieces.h"
 
-#define PIECES_TETRIS 7
-#define PIECE_3x3_AUX 5
+#define PIECES_TETRIS 7		// Number of diferent pieces in Tetris
+#define PIECE_3x3_AUX 5		//TODO que hace???
 #define PIECE_SIZE(x) ((x)!=6	?	((x)!=3 ? 3 : 2)	:	4)	// if x is an I, it's 4x4, if it's an O, its 2x2. Otherwise, it's 3x3
 
 int board[BOARD_HEIGHT][BOARD_WIDTH];
 
-int score, top, lines, level = 0, mod = 0;
-int tetromino[7];
+int score, top, lines, level = 0, mod = 0, tetromino[7];
 
 
 static int x_coord, y_coord;
@@ -18,7 +17,7 @@ void* pieces[PIECES_TETRIS] = {(void*)T, (void*)J, (void*)Z, (void*)O, (void*)S,
 //accept more than a single size for matrix. We decided this was easier than passing around the size of each piece as an arg. 
 
 static int status[4][4];
-static int nextPieceID;
+int nextPieceID;
 
 //initialize the board, 20*10 size
 void initBoard() {
@@ -45,7 +44,7 @@ void nextPiece() {
     }
     addPiece(nextPieceID);
 
-    mod = 0;
+    mod = 0;	//TODO que hace???
     //printf("Score: %d\n", score);
 }
 
@@ -82,7 +81,7 @@ void rotateClockwise() {
 for (i = y_coord; i < y_coord + aux; i++) {
     for (j = x_coord; j < x_coord + aux; j++) {
         if(board[i][j] == 1) {
-            if(board[(aux - (j - x_coord) + y_coord)][(aux - 1 - (i-y_coord) + x_coord)] == 2) {
+            if(board[(aux - (j - x_coord) + y_coord)][(aux - 1 - (i-y_coord) + x_coord)] > 1) {
                 return;
             }
         }
@@ -112,8 +111,9 @@ for (i = y_coord; i < y_coord + aux; i++) {
     }
     for (i = 0; i < aux; i++) {
 		for (j = 0; j < aux; j++) {
-			if(board[i + y_coord][j + x_coord] != 2)
-			status[i][j] = board[i + y_coord][j + x_coord];		//Saves the status, except the static ones.
+			if(board[i + y_coord][j + x_coord] < 2) {
+				status[i][j] = board[i + y_coord][j + x_coord];		//Saves the status, except the static ones.
+			}
 		}
     }
 }
@@ -182,7 +182,7 @@ void addPiece(int nextPieceID) {
 			status[i][j] = 0;
 			if(piece[i][j] == 1) {
 				status[i][j] = 1;
-				if(board[i][j + x_coord] == 2) {
+				if(board[i][j + x_coord] > 1) {
 					gameOver();
                     return;
 				}
@@ -197,8 +197,7 @@ void addPiece(int nextPieceID) {
 
 
 
-
-void shiftPieceDown(int keyPressed) {
+int shiftPieceDown(int keyPressed) {	//Returns 1 if there's collision, 0 if not. (to display sound)
 	int i, j, aux;
 	aux = PIECE_SIZE(nextPieceID);
 
@@ -209,9 +208,9 @@ void shiftPieceDown(int keyPressed) {
             if (board[i][j] == 1) {
 
                 // Check if the cell is at the bottom or above a stationary block
-                if (i >= BOARD_HEIGHT - 1 || board[i + 1][j] == 2) {                   
+                if (i >= BOARD_HEIGHT - 1 || board[i + 1][j] > 1) {
                     collision();
-                    return;
+                    return 1;
                 }
             }
         }
@@ -222,13 +221,13 @@ void shiftPieceDown(int keyPressed) {
         	if(board[i][j] == 1) {
         		board[i + 1][j] = board[i][j];
         	}
-        	if(board[i][j] != 2) {
+        	if(board[i][j] == 1) {
 				board[i][j] = 0;
 			}
         }
     }
     for (j = x_coord; j < x_coord + aux; j++) {
-        if (board[y_coord][j] != 2) {
+        if (board[y_coord][j] == 1) {
 			board[y_coord][j] = 0;
 		}			
     }
@@ -238,6 +237,8 @@ void shiftPieceDown(int keyPressed) {
     if(keyPressed) {
         score++;
     }
+
+    return 0;
 }
 
 void shiftPieceRight() {
@@ -248,7 +249,7 @@ void shiftPieceRight() {
     for (i = y_coord + aux - 1; i >= y_coord; i--) {
         for (j = x_coord + aux - 1; j >= x_coord; j--) {
 			if (board[i][j] == 1) {
-	            if (board[i][j + 1] == 2 || j + 1 >= BOARD_WIDTH) { 
+	            if (board[i][j + 1] > 1 || j + 1 >= BOARD_WIDTH) {
 					//check if active cells can move right without hitting the edge or another piece
     	            return; 
 				}
@@ -277,7 +278,7 @@ void shiftPieceLeft() {
     for (i = y_coord + aux - 1; i >= y_coord; i--) {
         for (j = x_coord; j < x_coord + aux; j++) {
             if (board[i][j] == 1) {
-                if (j - 1 < 0 || board[i][j - 1] == 2) { 
+                if (j - 1 < 0 || board[i][j - 1] > 1) {
 					//check if active cells can move left without hitting the edge or another piece
                     return;
                 }
@@ -302,34 +303,32 @@ void shiftPieceLeft() {
 //it's called when, you guessed it, a piece collides with something.
 void collision() {
 
-	int i, j, k, flag;
+	int i, j, k;
 
     //Cell upgrading loop
 
     for (i = 0; i < BOARD_HEIGHT; i++) {        //check the whole matrix for 1's and upgrade them to 2's every cycle.
         for (j = 0; j < BOARD_WIDTH; j++) {
             if(board[i][j] == 1) {
-				board[i][j]++;
+				board[i][j] += nextPieceID+1;		// Allows to differentiate the pieces, for colouring in front-pc.
 			}
         }
     }
 
     //Lane clearing logic
 
-    int currentLines = 0;
-    for(int i = BOARD_HEIGHT - 1; i >= 0; i--) {
-        int blocksPerRow = 0; 
-        int j = 0;
-        for(j; j < BOARD_WIDTH; j++) { //check all the board for complete rows. Not the most efficient, but the safest.
+    int currentLines, blocksPerRow;
+    for(i = BOARD_HEIGHT - 1, currentLines = 0; i >= 0; i--) {
+        for(j = 0, blocksPerRow = 0; j < BOARD_WIDTH; j++) { //check all the board for complete rows. Not the most efficient, but the safest.
             
-            if(board[i][j] == 2) {
+            if(board[i][j] > 1) {
                 blocksPerRow++;
             }
         }
         if(blocksPerRow == BOARD_WIDTH) { //check if we have a whole row. if so,
             currentLines++; //increase the line counter for this event (used later for points counting)
             
-            for(int k = i; k > 0; k--) {
+            for(k = i; k > 0; k--) {
                 for(j = 0; j < BOARD_WIDTH; j++) {  //run upwards through every row of the board, starting from the full row,
                     
                     board[k][j] = board[k-1][j];    //and copy the line above into the current line.
@@ -371,7 +370,7 @@ void collision() {
 }
 
 
-void gameOver(void) {
+void gameOver() {
     printf("Womp womp\nYour score was %d\n", score);
     printf("level reached: %d\n", lines);
     

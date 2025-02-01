@@ -51,9 +51,19 @@
 						</toolChain>
 					</folderInfo>
 					<fileInfo id="cdt.managedbuild.config.gnu.exe.debug.182069020.1616316769" name="pieces.h" rcbsApplicability="disable" resourcePath="Tetris/pieces.h" toolsToInvoke=""/>
+					<folderInfo id="cdt.managedbuild.config.gnu.exe.debug.182069020.1528264704" name="/" resourcePath="Tetris/front-disp">
+						<toolChain id="cdt.managedbuild.toolchain.gnu.exe.debug.1099083825" name="Linux GCC" superClass="cdt.managedbuild.toolchain.gnu.exe.debug" unusedChildren="">
+							<tool id="cdt.managedbuild.tool.gnu.archiver.base.760574462" name="GCC Archiver" superClass="cdt.managedbuild.tool.gnu.archiver.base.1051685466"/>
+							<tool id="cdt.managedbuild.tool.gnu.cpp.compiler.exe.debug.1190843934" name="GCC C++ Compiler" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.exe.debug.545260936"/>
+							<tool id="cdt.managedbuild.tool.gnu.c.compiler.exe.debug.342938600" name="GCC C Compiler" superClass="cdt.managedbuild.tool.gnu.c.compiler.exe.debug.1715877036"/>
+							<tool id="cdt.managedbuild.tool.gnu.c.linker.exe.debug.1398383645" name="GCC C Linker" superClass="cdt.managedbuild.tool.gnu.c.linker.exe.debug.1626653589"/>
+							<tool id="cdt.managedbuild.tool.gnu.cpp.linker.exe.debug.736893081" name="GCC C++ Linker" superClass="cdt.managedbuild.tool.gnu.cpp.linker.exe.debug.13930253"/>
+							<tool id="cdt.managedbuild.tool.gnu.assembler.exe.debug.1400496148" name="GCC Assembler" superClass="cdt.managedbuild.tool.gnu.assembler.exe.debug.192697971"/>
+						</toolChain>
+					</folderInfo>
 					<fileInfo id="cdt.managedbuild.config.gnu.exe.debug.182069020.1122605951" name="backend" rcbsApplicability="disable" resourcePath="Tetris/backend" toolsToInvoke=""/>
 					<sourceEntries>
-						<entry excluding="Tetris/front-pc.h" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
+						<entry excluding="Tetris/front-disp|Tetris/front-pc.h" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
 					</sourceEntries>
 				</configuration>
 			</storageModule>

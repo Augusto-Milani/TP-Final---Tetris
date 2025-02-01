@@ -20,7 +20,7 @@ void printMatrix_4by4(int[][4]);
 void printBoard();
 
 void addPiece(int);
-void shiftPieceDown(int);
+int shiftPieceDown(int);
 void shiftPieceLeft();
 void shiftPieceRight();
 void collision();
