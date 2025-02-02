@@ -1,14 +1,12 @@
 #include "backend.h"
 #include "pieces.h"
-
-#define PIECES_TETRIS 7		// Number of diferent pieces in Tetris
-#define PIECE_3x3_AUX 5		//TODO que hace???
-#define PIECE_SIZE(x) ((x)!=6	?	((x)!=3 ? 3 : 2)	:	4)	// if x is an I, it's 4x4, if it's an O, its 2x2. Otherwise, it's 3x3
+#include <stdbool.h>
 
 int board[BOARD_HEIGHT][BOARD_WIDTH];
+int nextPieceID, score, top, lines, level = 0, mod = 0, tetromino[PIECES_TETRIS];
+extern bool alive;
 
-int score, top, lines, level = 0, mod = 0, tetromino[7];
-
+#define PIECE_SIZE(x) ((x)!=6	?	((x)!=3 ? 3 : 2)	:	4)	// if x is an I, it's 4x4, if it's an O, its 2x2. Otherwise, it's 3x3
 
 static int x_coord, y_coord;
 void* pieces[PIECES_TETRIS] = {(void*)T, (void*)J, (void*)Z, (void*)O, (void*)S, (void*)L, (void*)I}; 
@@ -18,7 +16,6 @@ void* pieces[PIECES_TETRIS] = {(void*)T, (void*)J, (void*)Z, (void*)O, (void*)S,
 
 static int status[4][4];    //This matrix stores a copy of the piece that will spawn in board, so we can do the rotate logic in it instead
                             //of using the ones defined in pieces.h
-int nextPieceID;
 
 
 //**********************************************
@@ -72,9 +69,12 @@ void initBoard() {
             board[i][j] = 0;
         }
     }
+    for (i = 0; i < PIECES_TETRIS; i++) {
+    	tetromino[i] = 0;
+    }
+    score = 0;
     leaderBoard("------", 0, 0, 1);
-    
-    
+    nextPiece();	//Selecciona una primera pieza para empezar. La coloca en la matriz board.
 }
 
 void nextPiece() {
@@ -125,6 +125,7 @@ void addPiece(int nextPieceID) {
 			if(piece[i][j] == 1) {
 				status[i][j] = 1;
 				if(board[i][j + x_coord] > 1) { //if the board has a static piece where the game is trying to put a new piece, 
+					alive = false;
 					gameOver();
                     return;
 				}

@@ -32,11 +32,9 @@ typedef struct {	// Facilito usar allegro sin pasar muchos argumentos entre func
 		bool redraw;					// Bandera para dibujar.
 	} argument_t;
 
-extern int score, top, lines, level, mod, tetromino[7];
-extern int nextPieceID;
-char str1[7] = "------";
-char str2[7] = "------";
-char str3[7] = "------";
+extern int score, lines, level, mod, tetromino[PIECES_TETRIS], nextPieceID;	//TODO sacar mod testing
+static int top;
+
 bool alive = true;
 
 static int TITLE_WIDTH, TITLE_HEIGHT, BACK_WIDTH, BACK_HEIGHT,
@@ -58,7 +56,7 @@ static void TetrisGameOver();
 static void menuDraw();
 static void playDraw();
 static void pauseDraw(int index);
-static void gameoverDraw();
+static void gameoverDraw(char key, int index);
 
 /*
 typedef struct {
@@ -266,11 +264,10 @@ static void menuDraw() {
 
 
 static void TetrisPlay() {
-	initBoard();	// Inicializa matriz en 0.
-	nextPiece();	// Selecciona aleatoriamente la primera pieza, y la coloca en la matriz "board".
+	initBoard();	// Inicializa matriz en 0 y elige primera pieza.
 
 	playDraw();
-	alive = true;
+	alive = true;	// Flag para pantalla de game over.
 
 	al_play_sample_instance(argument.sample_instance);	//Reproduce música
 
@@ -317,7 +314,6 @@ static void TetrisPlay() {
 				else {
 					if(al_key_down(&(argument.ks), ALLEGRO_KEY_LEFT)) {
 						al_play_sample(argument.sfx4, 1.0, 0.0, 1.0, ALLEGRO_PLAYMODE_ONCE, NULL);
-						//alive = false;
 						argument.redraw = true;
 						shiftPieceLeft();	// Desplaza la pieza a la izquierda en la matriz "board".
 					}
@@ -340,7 +336,7 @@ static void TetrisPlay() {
 					}
 					else if(al_key_down(&(argument.ks), ALLEGRO_KEY_UP)) {
 						argument.redraw = true;
-						mod = 1;
+						mod = 1;	//TODO eliminar esto testing
 					}
 				}
 				break;
@@ -359,14 +355,17 @@ static void TetrisPlay() {
 
 /* Imprimir el Juego con la Matriz */
 static void playDraw() {
-	int aux;
-	al_clear_to_color(al_map_rgb(0, 0, 0));		// Limpio pantalla con negro.
+	int i, j, aux;
+	char str[7];	//TODO ver que no sea mayor al límite (%03, %06, %02)
 
+	// Limpio pantalla con negro.
+	al_clear_to_color(al_map_rgb(0, 0, 0));
+	// Imprimo background
 	al_draw_scaled_bitmap(argument.background, 0, 0, BACK_WIDTH, BACK_HEIGHT,
 								 dx, dy, BACK_WIDTH * scale, BACK_HEIGHT * scale,
 								 0);
-	int i, j;
-	char str[7];	//TODO ver que no sea mayor al límite (%03, %06, %02)
+	// Paso int a string, usando sprintf,rellenando con determinada cantidad de ceros a la izquierda.
+	// Luego, imprimo usando relaciones de escala para desplazamiento.
 	sprintf(str, "%03d", lines);
 	al_draw_text(argument.font, al_map_rgb(255, 255, 255), dx + move_x*19, dy + move_y*2, 0, str);
 	sprintf(str, "%06d", top);
@@ -381,58 +380,63 @@ static void playDraw() {
 		al_draw_text(argument.font, al_map_rgb(255, 255, 255), dx + move_x*6.5, dy + move_y*(11+i*2), 0, str);
 	}
 
+	// Imprime pieza siguiente TODO
 	for(i=0 ; i<4 ; i++) {
 		for(j=0 ; j<4 ; j++) {
-		al_draw_scaled_bitmap(argument.blocks,	0, 0,	TILE_WIDTH, TILE_HEIGHT,
-				dx + move_x*(24+j), dy + move_y*(13+i),	TILE_WIDTH * scale, TILE_HEIGHT * scale,	0);
+			al_draw_scaled_bitmap(argument.blocks,	0, 0,	TILE_WIDTH, TILE_HEIGHT,
+					dx + move_x*(24+j), dy + move_y*(13+i),	TILE_WIDTH * scale, TILE_HEIGHT * scale,	0);
 		}
 	}
+	// Imprime tablero
 	for(i=0 ; i<BOARD_HEIGHT ; i++) {
 		for(j=0 ; j<BOARD_WIDTH ; j++) {
-			if(board[i][j] == 1) {
-				switch(nextPieceID) {		// Imprime si no es nulo.
-					case 0:
+			if(board[i][j] == 1) {	// Si cumple, es pieza móvil y hay que revisar su ID.
+				switch(nextPieceID) {	//Nota: Ver "background.png" para ver correspondencias.
+					case 0:			// El 0, 3 y 6 corresponden a piezas T, O e I.
 					case 3:
 					case 6:
-						aux = 0;
+						aux = 0*TILE_WIDTH;
 						break;
-					case 1:
+					case 1:			// El 1 y 4 corresponden a piezas J y S.
 					case 4:
-						aux = 16;
+						aux = 2*TILE_WIDTH;
 						break;
-					case 2:
+					case 2:			// El 2 y 5 corresponden a piezas Z y L.
 					case 5:
-						aux = 8;
+						aux = 1*TILE_WIDTH;
 						break;
 					default:
 						break;
 				}
+				// Nota: El auxiliar determina color. Ver "blocks.png".
 				al_draw_scaled_bitmap(argument.blocks,	aux, 0,	TILE_WIDTH, TILE_HEIGHT,
 									 dx + move_x*(12+j), dy + move_y*(5+i),	TILE_WIDTH * scale, TILE_HEIGHT * scale,	0);
 			}
-			else if(board[i][j] > 1) {
-				switch(board[i][j]) {		// Imprime si no es nulo.
-					case 2:
+			else if(board[i][j] > 1) {	// Si cumple, es pieza estática y hay que revisar su valor exacto.
+				switch(board[i][j]) {		//Nota: La correspondencia es igual al ID de la pieza, pero sumada en 2.
+					case 2:			// El 2, 5 y 8 corresponden a piezas T, O e I.
 					case 5:
 					case 8:
-						aux = 0;
+						aux = 0*TILE_WIDTH;
 						break;
-					case 3:
+					case 3:			// El 3 y 6 corresponden a piezas J y S.
 					case 6:
-						aux = 16;
+						aux = 2*TILE_WIDTH;
 						break;
-					case 4:
+					case 4:			// El 4 y 7 corresponden a piezas Z y L.
 					case 7:
-						aux = 8;
+						aux = 1*TILE_WIDTH;
 						break;
 					default:
 						break;
 				}
+				// Nota: El auxiliar determina color. Ver "blocks.png".
 				al_draw_scaled_bitmap(argument.blocks,	aux, 0,	TILE_WIDTH, TILE_HEIGHT,
 									 dx + move_x*(12+j), dy + move_y*(5+i),	TILE_WIDTH * scale, TILE_HEIGHT * scale,	0);
 			}
 		}
 	}
+	// Refleja cambios en la pantalla
 	al_flip_display();
 }
 
@@ -440,22 +444,24 @@ static void playDraw() {
 
 
 static void TetrisPause() {
-
-	unsigned int paused_position = al_get_sample_instance_position(argument.sample_instance);
-	al_stop_sample_instance(argument.sample_instance); // Detener la reproducción de música.
-
 	int index = 0;
-	pauseDraw(index);
 
+	// Detengo la reproducción de música, guardando su estado para poder resumirla
+	unsigned int paused_position = al_get_sample_instance_position(argument.sample_instance);
+	al_stop_sample_instance(argument.sample_instance);
+
+	// Muestro pantalla de pausa con "CONTINUE" seleccionado por defecto (index = 0)
+	pauseDraw(0);
 	al_flip_display();
 
-	bool resume = false;
-	while(!resume  ) {
+	bool resume = false;	//	Bandera para resumir juego.
+	while( !resume ) {
 
 		al_wait_for_event(argument.queue, &(argument.event));
 		switch ((argument.event).type) {
 
 			case ALLEGRO_EVENT_DISPLAY_CLOSE:
+				resume = true;
 				argument.flagPlay = true;	// Al cerrar el display, termina el programa.
 				argument.flagMenu = true;
 				break;
@@ -464,34 +470,37 @@ static void TetrisPause() {
 				al_get_keyboard_state(&(argument.ks));
 
 				if(al_key_down(&(argument.ks), ALLEGRO_KEY_ESCAPE)) {
-					al_set_sample_instance_position(argument.sample_instance, paused_position);	//Reanuda música
+					//Reanuda música y juego al presionar Esc
+					al_set_sample_instance_position(argument.sample_instance, paused_position);
 					al_play_sample_instance(argument.sample_instance);
 					resume = true;
 					argument.redraw = true;
 				}
 				else if(al_key_down(&(argument.ks), ALLEGRO_KEY_UP)) {
+					// Cambia selección en menú pausa (hacia arriba)
 					argument.redraw = true;
 					index--;
 				}
 				else if(al_key_down(&(argument.ks), ALLEGRO_KEY_DOWN)) {
+					// Cambia selección en menú pausa (hacia abajo)
 					argument.redraw = true;
 					index++;
 				}
 				else if(al_key_down(&(argument.ks), ALLEGRO_KEY_ENTER)) {
+					// Selecciona la opción marcada, sabiendo el valor de index. Finaliza el menú de pausa.
 					resume = true;
 					switch(index) {
 
 						case 0:	//CONTINUE
 							al_set_sample_instance_position(argument.sample_instance, paused_position);
-							al_play_sample_instance(argument.sample_instance);	//Reanuda música
+							al_play_sample_instance(argument.sample_instance);	//Reanuda música.
 							argument.redraw = true;
 							break;					//Continúa el juego.
 
 						case 1:	//RESTART
-							al_play_sample_instance(argument.sample_instance);	//Reinicia música
+							al_play_sample_instance(argument.sample_instance);	//Reinicia música.
 							argument.redraw = true;
-							initBoard();				//Reinicia el juego
-							nextPiece();
+							initBoard();		// Inicializa matriz en 0 y elige primera pieza.
 							break;
 
 						case 2:	//EXIT
@@ -510,13 +519,10 @@ static void TetrisPause() {
 				}
 				break;
 
-			case ALLEGRO_EVENT_MOUSE_BUTTON_DOWN:
-				argument.flagPlay = true;
-				break;
-
 			default:
 				break;
 		}
+		// Resivo casos límites para imprimir pantalla
 		if(argument.redraw && !resume && al_is_event_queue_empty(argument.queue)) {
 			if(index < 0) {
 				index = 3;
@@ -531,18 +537,21 @@ static void TetrisPause() {
 	}
 }
 
+/* Imprimir Menú de Pausa */
 static void pauseDraw(int index) {
 	int pauseSelect[4] = {255, 255, 255, 255};
 	pauseSelect[index] = 0;
 
+	// Imprime background
 	al_draw_scaled_bitmap(argument.background, 0, 0, BACK_WIDTH, BACK_HEIGHT,
 									 dx, dy, BACK_WIDTH * scale, BACK_HEIGHT * scale, 0);
+
+	// El index seleccionado va a imprimir en amarillo, el resto en blanco.
 	al_draw_text(argument.font, al_map_rgb(255, 255, 255), dx + move_x*17, dy + move_y*10, ALLEGRO_ALIGN_CENTRE, "PAUSE");
 	al_draw_text(argument.font, al_map_rgb(255, 255, pauseSelect[0]), dx + move_x*12, dy + move_y*21, 0, "CONTINUE");
 	al_draw_text(argument.font, al_map_rgb(255, 255, pauseSelect[1]), dx + move_x*12, dy + move_y*22, 0, "RESTART");
 	al_draw_text(argument.font, al_map_rgb(255, 255, pauseSelect[2]), dx + move_x*12, dy + move_y*23, 0, "EXIT");
 	al_draw_text(argument.font, al_map_rgb(255, 255, pauseSelect[3]), dx + move_x*12, dy + move_y*24, 0, "CLOSE");
-	//El index seleccionado va a imprimir en amarillo, el resto en blanco.
 
 	al_flip_display();
 }
@@ -551,7 +560,7 @@ static void pauseDraw(int index) {
 
 static void TetrisGameOver() {
 	al_stop_sample_instance(argument.sample_instance); // Detener la reproducción de música
-	gameoverDraw();
+	gameoverDraw('-', 0);
 	char key;
 	int index = 0;
 
@@ -571,27 +580,17 @@ static void TetrisGameOver() {
 				al_get_keyboard_state(&(argument.ks));
 
 				if(al_key_down(&(argument.ks), ALLEGRO_KEY_ENTER)) {
-					//TODO score (llamo a backend?)
-					int i;
-					//falta un if preguntado si el puntaje es más alto
-					for(i=0 ; i<6 ; i++) {
-						str3[i] = str2[i];
-						str2[i] = str1[i];
-						str1[i] = '-';
-					}
-
 					resume = true;
 					argument.redraw = true;
 				}
 
 				else if(al_key_down(&(argument.ks), ALLEGRO_KEY_BACKSPACE)) {
 
-					if(index!=0)
+					if(index>=1)
 					{
 						index--;
 					}
-					str1[index] = '-';
-
+					key = '-';
 					argument.redraw = true;
 				}
 
@@ -599,7 +598,8 @@ static void TetrisGameOver() {
 					key = argument.event.keyboard.unichar;	// Registro el caracter presionado.
 					if(IS_LETTER(key)) {
 						if(index <= 5) {
-							str1[index++] = key;	//TODO STACK SMASHING DETECTED AL PRESIONAR MUCHOS CARACTERES
+							index++;
+							//str1[index++] = key;	//TODO STACK SMASHING DETECTED AL PRESIONAR MUCHOS CARACTERES
 							argument.redraw = true;
 						}
 					}
@@ -610,38 +610,73 @@ static void TetrisGameOver() {
 			default:
 				break;
 		}
+		// Imprimo, revisando condiciones
 		if(argument.redraw && !resume && al_is_event_queue_empty(argument.queue)) {
-			gameoverDraw();
+			gameoverDraw(key, index);
 			argument.redraw = false;
 		}
 	}
 }
 
-static void gameoverDraw() {
+/* Imprimo Menú de Game Over */
+static void gameoverDraw(char key, int index) {
+	static int score2, score3;
+	static char str1[] = "------",  str2[] = "------", str3[] = "------";
+	static bool flag = true;
+	int i;
+	char dest[19];	//string auxiliar
+
+	if(flag) {
+		flag = false;
+		if(score > score3) {
+			if(score > score2) {
+				if(score > top) {
+					score3 = score2;
+					score2 = top;
+					top = score;
+
+					for(i=0 ; i<6 ; i++) {
+						str3[i] = str2[i];
+						str2[i] = str1[i];
+						str1[i] = '-';
+					}
+				}
+				else {
+					score3 = score2;
+					score2 = score;
+
+					for(i=0 ; i<6 ; i++) {
+						str3[i] = str2[i];
+						str2[i] = '-';
+					}
+				}
+			}
+			else {
+				score3 = score;
+				for(i=0 ; i<6 ; i++) {
+					str3[i] = '-';
+				}
+			}
+		}
+	}
+
+	str2[index] = key;
 	al_clear_to_color(al_map_rgb(0, 0, 0));		// Limpio pantalla con negro.
 	al_draw_scaled_bitmap(argument.gameover,	0, 0,	GAMEOVER_WIDTH, GAMEOVER_HEIGHT,
 						  dx, dy,	BACK_WIDTH * scale, BACK_HEIGHT * scale, 	0);
-	char dest[19];
-	snprintf(dest, sizeof(dest), "1 %s %06d %02d", str1, score, level);
+
+	// Paso varios datos a una misma string (usando snprintf), para imprimirlos.
+	snprintf(dest, sizeof(dest), "1 %s %06d %02d", str1, top, level);
 	al_draw_text(argument.font, al_map_rgb(255, 255, 255), dx + move_x*7, dy + move_y*19, 0, dest);
-	snprintf(dest, sizeof(dest), "2 %s %06d %02d", str2, score, level);
+	snprintf(dest, sizeof(dest), "2 %s %06d %02d", str2, score2, level);
 	al_draw_text(argument.font, al_map_rgb(255, 255, 255), dx + move_x*7, dy + move_y*21, 0, dest);
-	snprintf(dest, sizeof(dest), "3 %s %06d %02d", str3, score, level);
+	snprintf(dest, sizeof(dest), "3 %s %06d %02d", str3, score3, level);
 	al_draw_text(argument.font, al_map_rgb(255, 255, 255), dx + move_x*7, dy + move_y*23, 0, dest);
 
+	// Reflejo cambios en la pantalla
 	al_flip_display();
+
+	// Nota: Si no se supera ningún puntaje, no varía el scoreboard.
+
 }
 
-
-/* NOTAS
- *
- * dx y dy indican la esquina izquierda del background, por lo que me desplazo
- * por cantidad de píxeles (26.4 aproximadamente) para cada bloque.
- *
- * Divido por 4.5 y 11 para ajustar con exactitud en base a la paleta de
- * bloques en el PNG usado.
- *
- * La escala se ajusta de manera global una vez al principio, TODO ver
- * con distintas resoluciones.
- *
- * */

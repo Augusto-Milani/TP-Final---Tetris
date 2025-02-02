@@ -11,6 +11,8 @@
 	#error Error: The board is very small.
 #endif
 
+#define PIECES_TETRIS 7		// Number of diferent pieces in Tetris
+
 void nextPiece();
 
 void rotateClockwise();
