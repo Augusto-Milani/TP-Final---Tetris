@@ -54,7 +54,7 @@ static void TetrisPause();
 static void TetrisGameOver();
 
 static void menuDraw();
-static void playDraw();
+static bool playDraw(bool tileColor);
 static void pauseDraw(int index);
 static void gameoverDraw(char key, int index, bool flag);
 
@@ -131,8 +131,9 @@ int main() {
 	check_init(argument.gameover, "game over image");
 
 	/* Timer */
-	argument.timer = al_create_timer(1.0);	//Creo timer de 1 segundo
+	argument.timer = al_create_timer( (double)3/(3+level) );	//Creo timer de 1 segundo
 	check_init(argument.timer, "timer");
+	al_start_timer(argument.timer);
 
 	/* Cola de Eventos */
 	argument.queue = al_create_event_queue();
@@ -181,7 +182,6 @@ int main() {
 
 
 	/* INICIA JUEGO */
-	al_start_timer(argument.timer);
 	TetrisMenu();
 
 	/* Finalización del Programa */
@@ -266,15 +266,16 @@ static void menuDraw() {
 
 
 static void TetrisPlay() {
+	int levelStatus = level;
+	bool newColor = false;
 	initBoard();	// Inicializa matriz en 0 y elige primera pieza.
 
-	playDraw();
+	playDraw(false);
 	alive = true;	// Flag para pantalla de game over.
 
 	al_play_sample_instance(argument.sample_instance);	//Reproduce música
 
 	argument.flagPlay = false;
-
 	while( !(argument.flagPlay) ) {
 
 		al_wait_for_event(argument.queue, &(argument.event));
@@ -285,8 +286,18 @@ static void TetrisPlay() {
 
 			case ALLEGRO_EVENT_TIMER:
 				argument.redraw = true;
+
 				if(shiftPieceDown(0)) {		// Desplaza la pieza hacia abajo en la matriz "board". Devuelve el estado de colisión, para saber si realizar el sonido.
 					al_play_sample(argument.sfx8, 1.0, 0.0, 1.0, ALLEGRO_PLAYMODE_ONCE, NULL);
+				}
+				if(levelStatus != level) {
+					levelStatus = level;
+					al_destroy_timer(argument.timer);
+					argument.timer = al_create_timer( (double)3/(3+level) );
+					check_init(argument.timer, "timer");
+					al_register_event_source(argument.queue, al_get_timer_event_source(argument.timer));
+					al_start_timer(argument.timer);
+					newColor = true;
 				}
 				if(alive == false) {
 					argument.flagPlay = true;
@@ -340,14 +351,15 @@ static void TetrisPlay() {
 		/* Rutina de Impresión */
 		if(argument.redraw && !(argument.flagPlay) && al_is_event_queue_empty(argument.queue)) {
 			argument.redraw = false;
-			playDraw();
+			newColor = playDraw(newColor);
 		}
 	}
 }
 
 /* Imprimir el Juego con la Matriz */
-static void playDraw() {
-	int i, j, aux;
+static bool playDraw(bool newColor) {
+	static int tileColor;
+	int i, j, tileVariant;
 	char str[7];	//TODO ver que no sea mayor al límite (%03, %06, %02)
 
 	// Limpio pantalla con negro.
@@ -372,10 +384,19 @@ static void playDraw() {
 		al_draw_text(argument.font, al_map_rgb(255, 255, 255), dx + move_x*6.5, dy + move_y*(11+i*2), 0, str);
 	}
 
+	if(newColor) {
+		newColor = false;
+		if(tileColor < 9*TILE_WIDTH) {
+			tileColor += TILE_WIDTH;
+		}
+		else {
+			tileColor = 0;
+		}
+	}
 	// Imprime pieza siguiente TODO
 	for(i=0 ; i<4 ; i++) {
 		for(j=0 ; j<4 ; j++) {
-			al_draw_scaled_bitmap(argument.blocks,	0, 0,	TILE_WIDTH, TILE_HEIGHT,
+			al_draw_scaled_bitmap(argument.blocks,	0, tileColor,	TILE_WIDTH, TILE_HEIGHT,
 					dx + move_x*(24+j), dy + move_y*(13+i),	TILE_WIDTH * scale, TILE_HEIGHT * scale,	0);
 		}
 	}
@@ -387,21 +408,21 @@ static void playDraw() {
 					case 0:			// El 0, 3 y 6 corresponden a piezas T, O e I.
 					case 3:
 					case 6:
-						aux = 0*TILE_WIDTH;
+						tileVariant = 0*TILE_WIDTH;
 						break;
 					case 1:			// El 1 y 4 corresponden a piezas J y S.
 					case 4:
-						aux = 2*TILE_WIDTH;
+						tileVariant = 2*TILE_WIDTH;
 						break;
 					case 2:			// El 2 y 5 corresponden a piezas Z y L.
 					case 5:
-						aux = 1*TILE_WIDTH;
+						tileVariant = 1*TILE_WIDTH;
 						break;
 					default:
 						break;
 				}
-				// Nota: El auxiliar determina color. Ver "blocks.png".
-				al_draw_scaled_bitmap(argument.blocks,	aux, 0,	TILE_WIDTH, TILE_HEIGHT,
+				// Nota: El auxiliar tileVariant determina color. Ver "blocks.png".
+				al_draw_scaled_bitmap(argument.blocks,	tileVariant, tileColor,	TILE_WIDTH, TILE_HEIGHT,
 									 dx + move_x*(12+j), dy + move_y*(5+i),	TILE_WIDTH * scale, TILE_HEIGHT * scale,	0);
 			}
 			else if(board[i][j] > 1) {	// Si cumple, es pieza estática y hay que revisar su valor exacto.
@@ -409,27 +430,28 @@ static void playDraw() {
 					case 2:			// El 2, 5 y 8 corresponden a piezas T, O e I.
 					case 5:
 					case 8:
-						aux = 0*TILE_WIDTH;
+						tileVariant = 0*TILE_WIDTH;
 						break;
 					case 3:			// El 3 y 6 corresponden a piezas J y S.
 					case 6:
-						aux = 2*TILE_WIDTH;
+						tileVariant = 2*TILE_WIDTH;
 						break;
 					case 4:			// El 4 y 7 corresponden a piezas Z y L.
 					case 7:
-						aux = 1*TILE_WIDTH;
+						tileVariant = 1*TILE_WIDTH;
 						break;
 					default:
 						break;
 				}
 				// Nota: El auxiliar determina color. Ver "blocks.png".
-				al_draw_scaled_bitmap(argument.blocks,	aux, 0,	TILE_WIDTH, TILE_HEIGHT,
+				al_draw_scaled_bitmap(argument.blocks,	tileVariant, tileColor,	TILE_WIDTH, TILE_HEIGHT,
 									 dx + move_x*(12+j), dy + move_y*(5+i),	TILE_WIDTH * scale, TILE_HEIGHT * scale,	0);
 			}
 		}
 	}
 	// Refleja cambios en la pantalla
 	al_flip_display();
+	return newColor;
 }
 
 
