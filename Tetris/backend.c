@@ -73,6 +73,8 @@ void initBoard() {
     	tetromino[i] = 0;
     }
     score = 0;
+    lines = 0;
+    level = 0;
     leaderBoard("------", 0, 0, 1);
     nextPiece();	//Selecciona una primera pieza para empezar. La coloca en la matriz board.
 }

@@ -56,7 +56,7 @@ static void TetrisGameOver();
 static void menuDraw();
 static void playDraw();
 static void pauseDraw(int index);
-static void gameoverDraw(char key, int index);
+static void gameoverDraw(char key, int index, bool flag);
 
 /*
 typedef struct {
@@ -200,7 +200,9 @@ int main() {
 
 /* Reviso si Allegro se inicializó correctamente */
 static void must_init(bool test, const char *description) {
-    if(test) return;	//TODO que pasó aca? ver git viejo
+    if(test) {
+    	return;
+    }
 
     printf("couldn't initialize %s.\n", description);
     exit(1);
@@ -291,16 +293,6 @@ static void TetrisPlay() {
 					TetrisGameOver();
 				}
 				break;
-
-			/*case ALLEGRO_EVENT_MOUSE_BUTTON_DOWN:
-				al_play_sample(argument.sfx6, 1.0, 0.0, 1.0, ALLEGRO_PLAYMODE_ONCE, NULL);
-				if((argument.event).mouse.button == 1) {	//Click izquierdo.
-					//TODO backend (pieza gira izq)***************
-				}
-				else if((argument.event).mouse.button == 2) {	//Click derecho.
-					rotateClockwise();
-				}
-				break;*/
 
 			case ALLEGRO_EVENT_KEY_CHAR:
 				al_get_keyboard_state(&(argument.ks));
@@ -560,11 +552,11 @@ static void pauseDraw(int index) {
 
 static void TetrisGameOver() {
 	al_stop_sample_instance(argument.sample_instance); // Detener la reproducción de música
-	gameoverDraw('-', 0);
+	gameoverDraw('-', 0, true);		// Imprime en pantalla el leaderboard.
 	char key;
 	int index = 0;
 
-	bool resume = false;
+	bool resume = false;	// Bandera para salir del menú pausa.
 	while( !resume ) {
 
 		al_wait_for_event(argument.queue, &(argument.event));
@@ -581,26 +573,22 @@ static void TetrisGameOver() {
 
 				if(al_key_down(&(argument.ks), ALLEGRO_KEY_ENTER)) {
 					resume = true;
-					argument.redraw = true;
+					argument.redraw = true;		// Vuelve al menú principal.
 				}
 
 				else if(al_key_down(&(argument.ks), ALLEGRO_KEY_BACKSPACE)) {
-
-					if(index>=1)
+					if(index > 0)
 					{
 						index--;
 					}
-					key = '-';
-					argument.redraw = true;
+					gameoverDraw('-', index, false);		// Borra el último caracter presionado.
 				}
 
 				else {
 					key = argument.event.keyboard.unichar;	// Registro el caracter presionado.
 					if(IS_LETTER(key)) {
-						if(index <= 5) {
-							index++;
-							//str1[index++] = key;	//TODO STACK SMASHING DETECTED AL PRESIONAR MUCHOS CARACTERES
-							argument.redraw = true;
+						if(index < 6) {
+							gameoverDraw(key, index++, false);		// Imprime el caracter con el puntaje obtenido.
 						}
 					}
 				}
@@ -610,67 +598,82 @@ static void TetrisGameOver() {
 			default:
 				break;
 		}
-		// Imprimo, revisando condiciones
-		if(argument.redraw && !resume && al_is_event_queue_empty(argument.queue)) {
-			gameoverDraw(key, index);
-			argument.redraw = false;
-		}
 	}
 }
 
 /* Imprimo Menú de Game Over */
-static void gameoverDraw(char key, int index) {
-	static int score2, score3;
-	static char str1[] = "------",  str2[] = "------", str3[] = "------";
-	static bool flag = true;
+static void gameoverDraw(char key, int index, bool flag) {
+	static int score2, score3, levels[3], aux;		// aux se utiliza para seleccionar el nombre que va a modificarse.
+	static char str[3][7] = {"------",  "------", "------"};	// De mayor a menor, el nombre de los 3 mayores puntajes obtenidos.
 	int i;
 	char dest[19];	//string auxiliar
 
 	if(flag) {
-		flag = false;
-		if(score > score3) {
-			if(score > score2) {
-				if(score > top) {
+		if(score > score3) {		// Si cumple, es el tercer mejor puntaje obtenido.
+			if(score > score2) {	// Si cumple, es el segundo mejor puntaje obtenido.
+				if(score > top) {	// Si cumple, es el mejor puntaje obtenido.
+					aux = 0;
+
+					// Desplaza el leaderboard hacia abajo.
 					score3 = score2;
 					score2 = top;
 					top = score;
 
+					levels[2] = levels[1];
+					levels[1] = levels[0];
+					levels[0] = level;
+
 					for(i=0 ; i<6 ; i++) {
-						str3[i] = str2[i];
-						str2[i] = str1[i];
-						str1[i] = '-';
+						str[2][i] = str[1][i];
+						str[1][i] = str[0][i];
+						str[0][i] = '-';
 					}
 				}
 				else {
+					aux = 1;
+
+					// Desplaza el leaderboard hacia abajo.
 					score3 = score2;
 					score2 = score;
 
+					levels[2] = levels[1];
+					levels[1] = level;
+
 					for(i=0 ; i<6 ; i++) {
-						str3[i] = str2[i];
-						str2[i] = '-';
+						str[2][i] = str[1][i];
+						str[1][i] = '-';
 					}
 				}
 			}
 			else {
+				aux = 2;
+
+				// Desplaza el leaderboard hacia abajo.
 				score3 = score;
+				levels[2] = level;
 				for(i=0 ; i<6 ; i++) {
-					str3[i] = '-';
+					str[2][i] = '-';
 				}
 			}
 		}
+		else {	// Si no cumple, no aparece en el leaderboard.
+			aux = -1;
+		}
 	}
 
-	str2[index] = key;
+	if(aux != -1) {
+		str[aux][index] = key;
+	}
 	al_clear_to_color(al_map_rgb(0, 0, 0));		// Limpio pantalla con negro.
 	al_draw_scaled_bitmap(argument.gameover,	0, 0,	GAMEOVER_WIDTH, GAMEOVER_HEIGHT,
 						  dx, dy,	BACK_WIDTH * scale, BACK_HEIGHT * scale, 	0);
 
 	// Paso varios datos a una misma string (usando snprintf), para imprimirlos.
-	snprintf(dest, sizeof(dest), "1 %s %06d %02d", str1, top, level);
+	snprintf(dest, sizeof(dest), "1 %.6s %06d %02d", str[0], top, levels[0]);
 	al_draw_text(argument.font, al_map_rgb(255, 255, 255), dx + move_x*7, dy + move_y*19, 0, dest);
-	snprintf(dest, sizeof(dest), "2 %s %06d %02d", str2, score2, level);
+	snprintf(dest, sizeof(dest), "2 %.6s %06d %02d", str[1], score2, levels[1]);
 	al_draw_text(argument.font, al_map_rgb(255, 255, 255), dx + move_x*7, dy + move_y*21, 0, dest);
-	snprintf(dest, sizeof(dest), "3 %s %06d %02d", str3, score3, level);
+	snprintf(dest, sizeof(dest), "3 %.6s %06d %02d", str[2], score3, levels[2]);
 	al_draw_text(argument.font, al_map_rgb(255, 255, 255), dx + move_x*7, dy + move_y*23, 0, dest);
 
 	// Reflejo cambios en la pantalla
