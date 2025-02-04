@@ -13,14 +13,19 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <unistd.h>
+#include <string.h>//para el strlen para saber cuantos caracteres tiene sin el '/0'
+#include <stdbool.h>
 #include "Libs/disdrv.h"
 #include "Libs/joydrv.h"
 #include "letras.h"
 #include "../backend.h"
 #define MAX_HEIGHT 16
 #define MAX_WIDTH 16
-#define SEC 200000
-#define FALL_TIME 1.0//tiempo que espera para caer en sec
+#define SEC 1000000
+#define FALL_TIME 1.5//tiempo que espera para caer en sec
+#define SCORE_TIME 0.5
+#define END 99
+#define MAX_TOP 5
 
 enum {PLAY=1,TOP,STOP,CONT};
 
@@ -28,13 +33,17 @@ enum {PLAY=1,TOP,STOP,CONT};
 static char menu (void);
 static void play (void);
 static void playini (void);
-static short tag (void);
+static int tag (void);
 static void print_level (int);
 static void board_redraw (void);
 static void pausa (char *);
+static void gameover (char *);
+static char make_top (int);
+static void print_top (char);
 
 extern int level,score;
 extern int board[BOARD_HEIGHT][BOARD_WIDTH];
+extern bool alive;
 
 
 int main (void)
@@ -107,10 +116,10 @@ static char menu (void)
 		}
 		disp_write(coords,D_ON);
 		disp_update();
-		usleep(200000);
+		usleep((SEC/10)*2);
 		disp_write(coords,D_OFF);
 		disp_update();
-		usleep(200000);
+		usleep((SEC/10)*2);
 		if(state!=PLAY && info.y>50)
 		{
 		  state--;
@@ -126,12 +135,12 @@ static char menu (void)
 }
 
 
-short tag (void)
+static int tag (void)
 {
 	dcoord_t coords={1,6};
 	joyinfo_t info;
-	char num=0,i,aux=0;
-	short user;
+	int num=0,i,aux=0;
+	int user=0;
 	letras_on(coords,'T');
 	(coords.x)+=4;
 	letras_on(coords,'A');
@@ -144,7 +153,7 @@ short tag (void)
 	do
 	{
 		letras_on(coords,'0'+num);
-		usleep(400000);
+		usleep((SEC/10)*4);
 		letras_off(coords,'0'+num);
 		info=joy_read();
 		if(num!=0 && info.x <-50)
@@ -170,12 +179,17 @@ short tag (void)
 
 static void play (void)
 {
-	int aux;
-	char flag=CONT;
-	short user;
+	int aux, i=0;
+	char flag=CONT,top;
+	int user;
+	char nums[20];
+	memset(nums,END,19);// inicializa todo el string en un numero cualquierra mayo a 10
 	joyinfo_t info;
-	clock_t last_fall_time = clock();
+	clock_t last_fall_time = clock(),last_number_time;
+	alive=true;
 	user=tag();
+	printf("%d",user);
+	score=0;
 	initBoard();
 	nextPiece();
 	while(flag!=STOP)
@@ -183,15 +197,32 @@ static void play (void)
 		print_level (level);
 		playini();
 		aux=level;
-		while(aux==level && flag != STOP)
+		while(level==aux && flag != STOP)
 		{
 			board_redraw();
 			clock_t current_time = clock();
-			double elapsed_time = (double)(current_time - last_fall_time) / CLOCKS_PER_SEC*100;
-			if(elapsed_time >= FALL_TIME)
+			double elapsed1_time = (double)(current_time - last_fall_time) / CLOCKS_PER_SEC*100,elapsed2_time = (double)(current_time - last_number_time) / CLOCKS_PER_SEC*10;
+			if(elapsed1_time >= FALL_TIME*(10.0/(10.0+level)))
 			{
 				shiftPieceDown(0);
 				last_fall_time = clock(); //reinicia el temporizador
+			}
+			else if(elapsed2_time >= SCORE_TIME)
+			{
+				dcoord_t coord={11,7};
+				letras_off(coord,nums[i-1]);
+				if(nums[i]==END)//chequea si ya esta en el ultimo numero
+				{
+					sprintf(nums,"%d",score);//funcion que guarda cada dijito del int en un arreglo de chars
+					i=0;
+				}
+				letras_on(coord,nums[i++]);
+				disp_update();
+				last_number_time = clock();
+			}
+			else if(alive==false)
+			{
+				gameover(&flag);
 			}
 			else
 			{
@@ -217,12 +248,158 @@ static void play (void)
 					pausa(&flag);
 				}
 			}
-			usleep(200000);//tiempo de espera para no tomar muchos valores
-
+			usleep(SEC/10);//pausa para no tomar demasiados valores
 		}
+	}
+	top=make_top(user);
+	if(top)
+	{
+		print_top(top);
 	}
 }
 
+static void gameover (char * flag)
+{
+	int i,j;
+	dcoord_t coord={15,9};
+	*flag=STOP;
+	disp_clear();
+	disp_update();
+	for(i=0;i<48;i++)
+	{
+		letras_on(coord,'G');
+		(coord.x)+=5;
+		letras_on(coord,'A');
+		(coord.x)+=4;
+		letras_on(coord,'M');
+		(coord.x)+=4;
+		letras_on(coord,'E');
+		(coord.x)+=7;
+		letras_on(coord,'O');
+		(coord.x)+=4;
+		letras_on(coord,'V');
+		(coord.x)+=5;
+		letras_on(coord,'E');
+		(coord.x)+=4;
+		letras_on(coord,'R');
+		usleep(SEC/12);
+
+		(coord.x)-=33;
+		letras_off(coord,'G');
+		(coord.x)+=5;
+		letras_off(coord,'A');
+		(coord.x)+=4;
+		letras_off(coord,'M');
+		(coord.x)+=4;
+		letras_off(coord,'E');
+		(coord.x)+=7;
+		letras_off(coord,'O');
+		(coord.x)+=4;
+		letras_off(coord,'V');
+		(coord.x)+=5;
+		letras_off(coord,'E');
+		(coord.x)+=4;
+		letras_off(coord,'R');
+		(coord.x)-=34;
+	}
+	(coord.x)=1;
+	(coord.y)=1;
+	for(j=0;j<2;j++)
+	{
+		for(i=0;i<5;i++)
+		{
+			disp_write(coord,D_ON);
+			(coord.x)++;
+			(coord.y)++;
+		}
+		(coord.x)-=5;
+		(coord.y)--;
+		for(i=0;i<5;i++)
+		{
+		disp_write(coord,D_ON);
+		(coord.x)++;
+		(coord.y)--;
+		}
+		(coord.x)=10;
+		(coord.y)=1;
+	}
+	(coord.x)=1;
+	(coord.y)=14;
+	for(i=0;i<2;i++)
+	{
+		disp_write(coord,D_ON);
+		(coord.y)--;
+	}
+	(coord.y)++;
+	for(i=0;i<2;i++)
+	{
+		(coord.x)++;
+		(coord.y)--;
+		disp_write(coord,D_ON);
+	}
+	for(i=0;i<9;i++)
+	{
+		(coord.x)++;
+		disp_write(coord,D_ON);
+	}
+	(coord.x)++;
+	(coord.y)++;
+	disp_write(coord,D_ON);
+	(coord.x)++;
+	for(i=0;i<2;i++)
+	{
+		(coord.y)++;
+		disp_write(coord,D_ON);
+	}
+	disp_update();
+	usleep(SEC*3);
+	disp_clear();
+}
+
+static void print_top(char top)
+{
+	char i,j,length = 0;
+	int num = score;
+	disp_update();
+	char nums[20];
+	memset(nums,END,19);
+	sprintf(nums,"%d",score);
+	dcoord_t coord={2,5};
+	letras_on(coord,'T');
+	(coord.x)+=4;
+	letras_on(coord,'O');
+	(coord.x)+=4;
+	letras_on(coord,'P');
+	(coord.x)=6;
+	(coord.y)=14;
+	letras_on(coord,'0'+top);
+	usleep(SEC*3); length = 0;
+	while (num > 0)
+	{
+		num /= 10;
+		length++;
+	}
+	disp_clear();
+	disp_update();
+	(coord.x)=15;
+	(coord.y)=10;
+	for(i=0;i<(length*6+MAX_WIDTH);i++)
+	{
+		for(j=0;nums[j]!=END;j++)
+		{
+			letras_on(coord,nums[j]);
+			(coord.x)+=6;
+		}
+		(coord.x)-=(j*6);
+		usleep(SEC/15);
+		for(j=0;nums[j]!=END;j++)
+		{
+			letras_off(coord,nums[j]);
+			(coord.x)+=6;
+		}
+		(coord.x)-=(j*6)+1;
+	}
+}
 
 static void pausa (char * flag)
 {
@@ -248,7 +425,7 @@ static void pausa (char * flag)
 	coords.x+=4;
 	letras_on (coords,'P');
 	coords.x=0;
-	usleep(400000);//tiempo de espera para que no tome el presionado para poner pausa
+	usleep(SEC);//tiempo de espera para que no tome el presionado para poner pausa
 	do
 	{
 		info = joy_read();
@@ -263,10 +440,10 @@ static void pausa (char * flag)
 		}
 		disp_write(coords,D_ON);
 		disp_update();
-		usleep(200000);
+		usleep((SEC/10)*2);
 		disp_write(coords,D_OFF);
 		disp_update();
-		usleep(200000);
+		usleep((SEC/10)*2);
 		if(state!=PLAY && info.y>50)
 		{
 		  state-=2;
@@ -337,7 +514,7 @@ static void print_level (int lv)
 		if(lv<10)
 		{
 			letras_on(coord,'0'+lv);
-			usleep(50000);
+			usleep(SEC/100);
 			(coord.x)-=21;
 		}
 		else
@@ -345,7 +522,7 @@ static void print_level (int lv)
 			letras_on(coord,'0'+lv/10);
 			(coord.x)+=6;
 			letras_on(coord,'0'+lv%10);
-			usleep(50000);
+			usleep(SEC/100);
 			(coord.x)-=27;
 		}
 		(coord.y)=9;
@@ -392,4 +569,86 @@ static void playini(void)
 	disp_update();
 }
 
+
+static char make_top(int user)
+{
+    char top = 0;
+    int scr[MAX_TOP] = {0}, users[MAX_TOP] = {0};
+    int i = 0, j = MAX_TOP, k = 0, aux1;
+
+    FILE *fscore = fopen("Top/score.txt", "r");
+    FILE *ftag = fopen("Top/tag.txt", "r");
+
+    if (!fscore || !ftag)
+    {
+        printf("Error al abrir archivos\n");
+        if (fscore) fclose(fscore);
+        if (ftag) fclose(ftag);
+        return 0;
+    }
+
+    // Leer puntajes del archivo
+    while (i < MAX_TOP && fscanf(fscore, "%d", &scr[i]) == 1)
+    {
+        i++;
+    }
+    fclose(fscore);
+
+    // Leer usuarios del archivo
+    i = 0;
+    while (i < MAX_TOP && fscanf(ftag, "%d", &users[i]) == 1)
+    {
+        i++;
+    }
+    fclose(ftag);
+
+    // Determinar si el nuevo puntaje entra en el ranking
+    for (i = 0; i < MAX_TOP; i++)
+    {
+        if (scr[i] < score)
+        {
+            top = i + 1;
+            j = i;
+            k = i;
+            break;
+        }
+    }
+
+    if (top || i < MAX_TOP)
+    {
+        // Insertar el nuevo puntaje y usuario en el ranking
+        for (j = MAX_TOP - 1; j > k; j--)
+        {
+            scr[j] = scr[j - 1];
+            users[j] = users[j - 1];
+        }
+        scr[k] = score;
+        users[k] = user;
+    }
+
+    // Guardar los nuevos valores en los archivos
+    fscore = fopen("Top/score.txt", "w");
+    ftag = fopen("Top/tag.txt", "w");
+
+    if (!fscore || !ftag)
+    {
+        printf("Error al abrir archivos para escritura\n");
+        if (fscore) fclose(fscore);
+        if (ftag) fclose(ftag);
+        return 0;
+    }
+
+    for (i = 0; i < MAX_TOP; i++)
+    {
+        fprintf(fscore, "%d\n", scr[i]);
+        fprintf(ftag, "%d\n", users[i]);
+        fflush(ftag);
+        fflush(fscore);
+    }
+
+    fclose(fscore);
+    fclose(ftag);
+
+    return top;
+}
 

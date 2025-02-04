@@ -12,7 +12,7 @@
 #define MAX_HEIGHT 16
 #define MAX_WIDTH 16
 
-#define CHECK if((coords.x)<MAX_WIDTH && (coords.y)<MAX_HEIGHT)
+#define CHECK if((coords.x)<MAX_WIDTH && (coords.y)<MAX_HEIGHT && (coords.x)>=0 && (coords.y)>=0)
 
 void letras_on (dcoord_t coords,char let)
 {
@@ -22,6 +22,7 @@ void letras_on (dcoord_t coords,char let)
 	case 'A':
 		for(i=0;i<5;i++)
 		{
+			CHECK
 			disp_write(coords,D_ON);
 			(coords.y)--;
 		}
@@ -29,20 +30,24 @@ void letras_on (dcoord_t coords,char let)
 		for(i=0;i<2;i++)
 		{
 			(coords.x)++;
+			CHECK
 			disp_write(coords,D_ON);
 		}
 		for(i=0;i<4;i++)
 		{
 			(coords.y)++;
+			CHECK
 			disp_write(coords,D_ON);
 		}
 		coords.y-=2;
 		coords.x--;
+		CHECK
 		disp_write(coords,D_ON);
 		break;
 	case 'P':
 		for(i=0;i<5;i++)
 		{
+			CHECK
 			disp_write(coords,D_ON);
 			(coords.y)--;
 		}
@@ -50,14 +55,17 @@ void letras_on (dcoord_t coords,char let)
 		for(i=0;i<2;i++)
 		{
 			(coords.x)++;
+			CHECK
 			disp_write(coords,D_ON);
 		}
 		for(i=0;i<2;i++)
 		{
 			(coords.y)++;
+			CHECK
 			disp_write(coords,D_ON);
 		}
 		(coords.x)--;
+		CHECK
 		disp_write(coords,D_ON);
 		break;
 	case 'L':
@@ -91,18 +99,22 @@ void letras_on (dcoord_t coords,char let)
 		coords.x++;
 		for(i=0;i<5;i++)
 		{
+			CHECK
 			disp_write(coords,D_ON);
 			(coords.y)--;
 		}
 		(coords.y)++;
 		(coords.x)--;
+		CHECK
 		disp_write(coords,D_ON);
 		(coords.x)+=2;
+		CHECK
 		disp_write(coords,D_ON);
 		break;
 	case 'O':
 		for(i=0;i<5;i++)
 		{
+			CHECK
 			disp_write(coords,D_ON);
 			(coords.y)--;
 		}
@@ -110,14 +122,17 @@ void letras_on (dcoord_t coords,char let)
 		for(i=0;i<2;i++)
 		{
 			(coords.x)++;
+			CHECK
 			disp_write(coords,D_ON);
 		}
 		for(i=0;i<4;i++)
 		{
 			(coords.y)++;
+			CHECK
 			disp_write(coords,D_ON);
 		}
 		(coords.x)--;
+		CHECK
 		disp_write(coords,D_ON);
 		break;
 	case 'S':
@@ -171,6 +186,7 @@ void letras_on (dcoord_t coords,char let)
 	case 'R':
 		for(i=0;i<5;i++)
 		{
+			CHECK
 			disp_write(coords,D_ON);
 			(coords.y)--;
 		}
@@ -178,23 +194,28 @@ void letras_on (dcoord_t coords,char let)
 		for(i=0;i<2;i++)
 		{
 			(coords.x)++;
+			CHECK
 			disp_write(coords,D_ON);
 		}
 		(coords.y)++;
+		CHECK
 		disp_write(coords,D_ON);
 		(coords.y)++;
 		(coords.x)--;
+		CHECK
 		disp_write(coords,D_ON);
 		(coords.x)++;
 		for(i=0;i<2;i++)
 		{
 			(coords.y)++;
+			CHECK
 			disp_write(coords,D_ON);
 		}
 		break;
 	case 'G':
 		for(i=0;i<5;i++)
 		{
+			CHECK
 			disp_write(coords,D_ON);
 			(coords.y)--;
 		}
@@ -202,21 +223,26 @@ void letras_on (dcoord_t coords,char let)
 		for(i=0;i<3;i++)
 		{
 			(coords.x)++;
+			CHECK
 			disp_write(coords,D_ON);
 		}
 		(coords.y)+=2;
 		(coords.x)--;
+		CHECK
 		disp_write(coords,D_ON);
 		(coords.x)++;
 		for(i=0;i<3;i++)
 		{
+			CHECK
 			disp_write(coords,D_ON);
 			(coords.y)++;
 		}
 		(coords.y)--;
 		(coords.x)--;
+		CHECK
 		disp_write(coords,D_ON);
 		(coords.x)--;
+		CHECK
 		disp_write(coords,D_ON);
 		break;
 	case 'E':
@@ -227,13 +253,13 @@ void letras_on (dcoord_t coords,char let)
 			disp_write(coords,D_ON);
 		}
 		(coords.x)-=2;
-		for(i=0;i<3;i++)
+		for(i=0;i<5;i++)
 		{
-			(coords.y)--;
 			CHECK
 			disp_write(coords,D_ON);
+			(coords.y)--;
 		}
-		(coords.y)++;
+		(coords.y)+=3;
 		for(i=0;i<2;i++)
 		{
 			(coords.x)++;
@@ -277,6 +303,26 @@ void letras_on (dcoord_t coords,char let)
 			CHECK
 			disp_write(coords,D_ON);
 			(coords.y)--;
+		}
+		break;
+	case 'M':
+		for(i=0;i<5;i++)
+		{
+			CHECK
+			disp_write(coords,D_ON);
+			(coords.y)--;
+		}
+		(coords.y)+=2;
+		(coords.x)++;
+		CHECK
+		disp_write(coords,D_ON);
+		(coords.y)--;
+		(coords.x)++;
+		for(i=0;i<5;i++)
+		{
+			CHECK
+			disp_write(coords,D_ON);
+			(coords.y)++;
 		}
 		break;
 	case '0':
@@ -608,6 +654,7 @@ void letras_off (dcoord_t coords,char let)
 	case 'A':
 		for(i=0;i<5;i++)
 		{
+			CHECK
 			disp_write(coords,D_OFF);
 			(coords.y)--;
 		}
@@ -615,20 +662,24 @@ void letras_off (dcoord_t coords,char let)
 		for(i=0;i<2;i++)
 		{
 			(coords.x)++;
+			CHECK
 			disp_write(coords,D_OFF);
 		}
 		for(i=0;i<4;i++)
 		{
 			(coords.y)++;
+			CHECK
 			disp_write(coords,D_OFF);
 		}
 		coords.y-=2;
 		coords.x--;
+		CHECK
 		disp_write(coords,D_OFF);
 		break;
 	case 'P':
 		for(i=0;i<5;i++)
 		{
+			CHECK
 			disp_write(coords,D_OFF);
 			(coords.y)--;
 		}
@@ -636,14 +687,17 @@ void letras_off (dcoord_t coords,char let)
 		for(i=0;i<2;i++)
 		{
 			(coords.x)++;
+			CHECK
 			disp_write(coords,D_OFF);
 		}
 		for(i=0;i<2;i++)
 		{
 			(coords.y)++;
+			CHECK
 			disp_write(coords,D_OFF);
 		}
 		(coords.x)--;
+		CHECK
 		disp_write(coords,D_OFF);
 		break;
 	case 'L':
@@ -677,18 +731,22 @@ void letras_off (dcoord_t coords,char let)
 		coords.x++;
 		for(i=0;i<5;i++)
 		{
+			CHECK
 			disp_write(coords,D_OFF);
 			(coords.y)--;
 		}
 		(coords.y)++;
 		(coords.x)--;
+		CHECK
 		disp_write(coords,D_OFF);
 		(coords.x)+=2;
+		CHECK
 		disp_write(coords,D_OFF);
 		break;
 	case 'O':
 		for(i=0;i<5;i++)
 		{
+			CHECK
 			disp_write(coords,D_OFF);
 			(coords.y)--;
 		}
@@ -696,14 +754,17 @@ void letras_off (dcoord_t coords,char let)
 		for(i=0;i<2;i++)
 		{
 			(coords.x)++;
+			CHECK
 			disp_write(coords,D_OFF);
 		}
 		for(i=0;i<4;i++)
 		{
 			(coords.y)++;
+			CHECK
 			disp_write(coords,D_OFF);
 		}
 		(coords.x)--;
+		CHECK
 		disp_write(coords,D_OFF);
 		break;
 	case 'S':
@@ -757,6 +818,7 @@ void letras_off (dcoord_t coords,char let)
 	case 'R':
 		for(i=0;i<5;i++)
 		{
+			CHECK
 			disp_write(coords,D_OFF);
 			(coords.y)--;
 		}
@@ -764,23 +826,28 @@ void letras_off (dcoord_t coords,char let)
 		for(i=0;i<2;i++)
 		{
 			(coords.x)++;
+			CHECK
 			disp_write(coords,D_OFF);
 		}
 		(coords.y)++;
+		CHECK
 		disp_write(coords,D_OFF);
 		(coords.y)++;
 		(coords.x)--;
+		CHECK
 		disp_write(coords,D_OFF);
 		(coords.x)++;
 		for(i=0;i<2;i++)
 		{
 			(coords.y)++;
+			CHECK
 			disp_write(coords,D_OFF);
 		}
 		break;
 	case 'G':
 		for(i=0;i<5;i++)
 		{
+			CHECK
 			disp_write(coords,D_OFF);
 			(coords.y)--;
 		}
@@ -788,21 +855,26 @@ void letras_off (dcoord_t coords,char let)
 		for(i=0;i<3;i++)
 		{
 			(coords.x)++;
+			CHECK
 			disp_write(coords,D_OFF);
 		}
 		(coords.y)+=2;
 		(coords.x)--;
+		CHECK
 		disp_write(coords,D_OFF);
 		(coords.x)++;
 		for(i=0;i<3;i++)
 		{
+			CHECK
 			disp_write(coords,D_OFF);
 			(coords.y)++;
 		}
 		(coords.y)--;
 		(coords.x)--;
+		CHECK
 		disp_write(coords,D_OFF);
 		(coords.x)--;
+		CHECK
 		disp_write(coords,D_OFF);
 		break;
 	case 'E':
@@ -813,13 +885,13 @@ void letras_off (dcoord_t coords,char let)
 			disp_write(coords,D_OFF);
 		}
 		(coords.x)-=2;
-		for(i=0;i<3;i++)
+		for(i=0;i<5;i++)
 		{
-			(coords.y)--;
 			CHECK
 			disp_write(coords,D_OFF);
+			(coords.y)--;
 		}
-		(coords.y)++;
+		(coords.y)+=3;
 		for(i=0;i<2;i++)
 		{
 			(coords.x)++;
@@ -863,6 +935,26 @@ void letras_off (dcoord_t coords,char let)
 			CHECK
 			disp_write(coords,D_OFF);
 			(coords.y)--;
+		}
+		break;
+	case 'M':
+		for(i=0;i<5;i++)
+		{
+			CHECK
+			disp_write(coords,D_OFF);
+			(coords.y)--;
+		}
+		(coords.y)+=2;
+		(coords.x)++;
+		CHECK
+		disp_write(coords,D_OFF);
+		(coords.y)--;
+		(coords.x)++;
+		for(i=0;i<5;i++)
+		{
+			CHECK
+			disp_write(coords,D_OFF);
+			(coords.y)++;
 		}
 		break;
 	case '0':
