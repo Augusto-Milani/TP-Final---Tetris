@@ -318,7 +318,13 @@ static void TetrisPlay() {
 				}
 
 				else {
-					if(al_key_down(&(argument.ks), ALLEGRO_KEY_LEFT)) {
+					if(al_key_down(&(argument.ks), ALLEGRO_KEY_DOWN)) {
+						argument.redraw = true;
+						if(shiftPieceDown(1)) {		// Desplaza la pieza hacia abajo en la matriz "board", sumando puntaje. Devuelve el estado de colisión, para realizar el sonido.
+							al_play_sample(argument.sfx8, 1.0, 0.0, 1.0, ALLEGRO_PLAYMODE_ONCE, NULL);
+						}
+					}
+					else if(al_key_down(&(argument.ks), ALLEGRO_KEY_LEFT)) {
 						al_play_sample(argument.sfx4, 1.0, 0.0, 1.0, ALLEGRO_PLAYMODE_ONCE, NULL);
 						argument.redraw = true;
 						shiftPieceLeft();	// Desplaza la pieza a la izquierda en la matriz "board".
@@ -328,12 +334,6 @@ static void TetrisPlay() {
 						argument.redraw = true;
 						shiftPieceRight();	// Desplaza la pieza a la derecha en la matriz "board".
 						mod = 0;
-					}
-					else if(al_key_down(&(argument.ks), ALLEGRO_KEY_DOWN)) {
-						argument.redraw = true;
-						if(shiftPieceDown(1)) {		// Desplaza la pieza hacia abajo en la matriz "board", sumando puntaje. Devuelve el estado de colisión, para realizar el sonido.
-							al_play_sample(argument.sfx8, 1.0, 0.0, 1.0, ALLEGRO_PLAYMODE_ONCE, NULL);
-						}
 					}
 					else if(al_key_down(&(argument.ks), ALLEGRO_KEY_SPACE)) {
 						al_play_sample(argument.sfx6, 1.0, 0.0, 1.0, ALLEGRO_PLAYMODE_ONCE, NULL);
