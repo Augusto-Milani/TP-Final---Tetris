@@ -229,7 +229,6 @@ static int tag (void)
 
 }
 
-
 static void play (void)
 {
 	int aux, i=0;
