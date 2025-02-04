@@ -32,7 +32,9 @@ typedef struct {	// Facilito usar allegro sin pasar muchos argumentos entre func
 		bool redraw;					// Bandera para dibujar.
 	} argument_t;
 
-extern int score, lines, level, mod, tetromino[PIECES_TETRIS], nextPieceID;	//TODO sacar mod testing
+extern int score, lines, level, mod, tetromino[PIECES_TETRIS], PieceID, nextPieceID;	//TODO sacar mod testing
+extern int nextPieceStatus[4][4];
+
 static int top;
 
 bool alive = true;
@@ -54,7 +56,8 @@ static void TetrisPause();
 static void TetrisGameOver();
 
 static void menuDraw();
-static bool playDraw(bool tileColor);
+static void playDraw(bool tileColor);
+static int switchPieceID(int ID);
 static void pauseDraw(int index);
 static void gameoverDraw(char key, int index, bool flag);
 
@@ -270,10 +273,10 @@ static void TetrisPlay() {
 	bool newColor = false;
 	initBoard();	// Inicializa matriz en 0 y elige primera pieza.
 
-	playDraw(false);
-	alive = true;	// Flag para pantalla de game over.
+	playDraw(false);	//Dibuja la pantalla, sin cambiar color de las piezas.
+	alive = true;	// Flag para pantalla de game over. Se modifica en "backend.c".
 
-	al_play_sample_instance(argument.sample_instance);	//Reproduce música
+	al_play_sample_instance(argument.sample_instance);	//Reproduce música.
 
 	argument.flagPlay = false;
 	while( !(argument.flagPlay) ) {
@@ -351,16 +354,17 @@ static void TetrisPlay() {
 		/* Rutina de Impresión */
 		if(argument.redraw && !(argument.flagPlay) && al_is_event_queue_empty(argument.queue)) {
 			argument.redraw = false;
-			newColor = playDraw(newColor);
+			playDraw(newColor);	//Dibuja la pantalla. Si newColor es true, cambia color de los bloques.
+			newColor = false;
 		}
 	}
 }
 
 /* Imprimir el Juego con la Matriz */
-static bool playDraw(bool newColor) {
+static void playDraw(bool newColor) {
 	static int tileColor;
 	int i, j, tileVariant;
-	char str[7];	//TODO ver que no sea mayor al límite (%03, %06, %02)
+	char str[7];
 
 	// Limpio pantalla con negro.
 	al_clear_to_color(al_map_rgb(0, 0, 0));
@@ -385,7 +389,6 @@ static bool playDraw(bool newColor) {
 	}
 
 	if(newColor) {
-		newColor = false;
 		if(tileColor < 9*TILE_WIDTH) {
 			tileColor += TILE_WIDTH;
 		}
@@ -393,57 +396,36 @@ static bool playDraw(bool newColor) {
 			tileColor = 0;
 		}
 	}
-	// Imprime pieza siguiente TODO
+
+	// Imprime pieza siguiente
 	for(i=0 ; i<4 ; i++) {
 		for(j=0 ; j<4 ; j++) {
-			al_draw_scaled_bitmap(argument.blocks,	0, tileColor,	TILE_WIDTH, TILE_HEIGHT,
-					dx + move_x*(24+j), dy + move_y*(13+i),	TILE_WIDTH * scale, TILE_HEIGHT * scale,	0);
+
+			if(nextPieceStatus[i][j]) {
+
+				tileVariant = switchPieceID(nextPieceID);
+
+				al_draw_scaled_bitmap(argument.blocks,	tileVariant, tileColor,	TILE_WIDTH, TILE_HEIGHT,
+						dx + move_x*(24+j), dy + move_y*(13+i),	TILE_WIDTH * scale, TILE_HEIGHT * scale,	0);
+			}
 		}
 	}
 	// Imprime tablero
 	for(i=0 ; i<BOARD_HEIGHT ; i++) {
 		for(j=0 ; j<BOARD_WIDTH ; j++) {
+
 			if(board[i][j] == 1) {	// Si cumple, es pieza móvil y hay que revisar su ID.
-				switch(nextPieceID) {	//Nota: Ver "background.png" para ver correspondencias.
-					case 0:			// El 0, 3 y 6 corresponden a piezas T, O e I.
-					case 3:
-					case 6:
-						tileVariant = 0*TILE_WIDTH;
-						break;
-					case 1:			// El 1 y 4 corresponden a piezas J y S.
-					case 4:
-						tileVariant = 2*TILE_WIDTH;
-						break;
-					case 2:			// El 2 y 5 corresponden a piezas Z y L.
-					case 5:
-						tileVariant = 1*TILE_WIDTH;
-						break;
-					default:
-						break;
-				}
-				// Nota: El auxiliar tileVariant determina color. Ver "blocks.png".
+
+				tileVariant = switchPieceID(PieceID);	// El auxiliar tileVariant determina textura. Ver "blocks.png".
+
 				al_draw_scaled_bitmap(argument.blocks,	tileVariant, tileColor,	TILE_WIDTH, TILE_HEIGHT,
 									 dx + move_x*(12+j), dy + move_y*(5+i),	TILE_WIDTH * scale, TILE_HEIGHT * scale,	0);
 			}
+
 			else if(board[i][j] > 1) {	// Si cumple, es pieza estática y hay que revisar su valor exacto.
-				switch(board[i][j]) {		//Nota: La correspondencia es igual al ID de la pieza, pero sumada en 2.
-					case 2:			// El 2, 5 y 8 corresponden a piezas T, O e I.
-					case 5:
-					case 8:
-						tileVariant = 0*TILE_WIDTH;
-						break;
-					case 3:			// El 3 y 6 corresponden a piezas J y S.
-					case 6:
-						tileVariant = 2*TILE_WIDTH;
-						break;
-					case 4:			// El 4 y 7 corresponden a piezas Z y L.
-					case 7:
-						tileVariant = 1*TILE_WIDTH;
-						break;
-					default:
-						break;
-				}
-				// Nota: El auxiliar determina color. Ver "blocks.png".
+
+				tileVariant = switchPieceID(board[i][j] - 2);	// La correspondencia es igual al ID de la pieza, pero restada en 2 (por ser estática).
+
 				al_draw_scaled_bitmap(argument.blocks,	tileVariant, tileColor,	TILE_WIDTH, TILE_HEIGHT,
 									 dx + move_x*(12+j), dy + move_y*(5+i),	TILE_WIDTH * scale, TILE_HEIGHT * scale,	0);
 			}
@@ -451,10 +433,30 @@ static bool playDraw(bool newColor) {
 	}
 	// Refleja cambios en la pantalla
 	al_flip_display();
-	return newColor;
 }
 
-
+/* Selección de Texturas para Piezas */
+static int switchPieceID(int ID) {
+	int tileVariant;
+	switch(ID) {	//Nota: Ver "background.png" junto a "blocks.png" para ver correspondencias.
+		case 0:			// El 0, 3 y 6 corresponden a piezas T, O e I.
+		case 3:
+		case 6:
+			tileVariant = 0*TILE_WIDTH;
+			break;
+		case 1:			// El 1 y 4 corresponden a piezas J y S.
+		case 4:
+			tileVariant = 2*TILE_WIDTH;
+			break;
+		case 2:			// El 2 y 5 corresponden a piezas Z y L.
+		case 5:
+			tileVariant = 1*TILE_WIDTH;
+			break;
+		default:
+			break;
+	}
+	return tileVariant;
+}
 
 
 static void TetrisPause() {

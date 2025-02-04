@@ -2,14 +2,14 @@
 #include "pieces.h"
 #include <stdbool.h>
 
-int board[BOARD_HEIGHT][BOARD_WIDTH];
-int nextPieceID, score, top, lines, level = 0, mod = 0, tetromino[PIECES_TETRIS];
+int board[BOARD_HEIGHT][BOARD_WIDTH], nextPieceStatus[4][4];
+int PieceID, nextPieceID, score, top, lines, level, mod = 0, tetromino[PIECES_TETRIS];	//TODO sacar mod (testing)
 extern bool alive;
 
 #define PIECE_SIZE(x) ((x)!=6	?	((x)!=3 ? 3 : 2)	:	4)	// if x is an I, it's 4x4, if it's an O, its 2x2. Otherwise, it's 3x3
 
 static int x_coord, y_coord;
-void* pieces[PIECES_TETRIS] = {(void*)T, (void*)J, (void*)Z, (void*)O, (void*)S, (void*)L, (void*)I}; 
+static void* pieces[PIECES_TETRIS] = {(void*)T, (void*)J, (void*)Z, (void*)O, (void*)S, (void*)L, (void*)I};
 //This array holds a pointer to each piece, it was made global as most functions use it in some way.
 //The order is not trivial, there's a complementary macro to this array that stores the size of each piece, to make the functions
 //accept more than a single size for matrix. We decided this was easier than passing around the size of each piece as an arg. 
@@ -63,7 +63,7 @@ void printBoard(){ //this is a stub
 
 //initialize the board, 20*10 size
 void initBoard() {
-	int i, j;
+	int i, j, aux;
     for (i = 0; i < BOARD_HEIGHT; i++) {
         for (j = 0; j < BOARD_WIDTH; j++) {
             board[i][j] = 0;
@@ -76,22 +76,45 @@ void initBoard() {
     lines = 0;
     level = 0;
     leaderBoard("------", 0, 0, 1);
-    nextPiece();	//Selecciona una primera pieza para empezar. La coloca en la matriz board.
+
+    // Cleans matrix
+    for (i = 0; i < 4; i++) {
+		for (j = 0; j < 4; j++) {
+			nextPieceStatus[i][j] = 0;
+		}
+	}
+
+    nextPieceID = rand() % PIECES_TETRIS;	//at the start, there will be two different pieces displayed in the same instance.
+    aux = PIECE_SIZE(nextPieceID);
+    int (*piece)[aux] = (int(*)[aux])(pieces[nextPieceID]); // Cast to matrix
+
+    for (i = 0; i < aux; i++) {
+		for (j = 0; j < aux; j++) {
+
+			if(piece[i][j] == 1) {
+				nextPieceStatus[i][j] = 1;	//only copies the active states
+			}
+		}
+    }
+
+    nextPiece();	//selects the first piece to play. it's placed in the matrix "board".
 }
 
 void nextPiece() {
 	x_coord = (int)BOARD_WIDTH/2 - 2;
 	y_coord = 0;
 
-    if(mod) { //mod is a variable used only for testing purposes, kinda like a cheat code. don't tell anyone! 
+	PieceID = nextPieceID;		//the next piece is placed in board.
+
+    if(mod) { //TODO volar esto. pd lety dejá las drogas || mod is a variable used only for testing purposes, kinda like a cheat code. don't tell anyone!
         nextPieceID = 6;
     }
     else {
         nextPieceID = rand() % PIECES_TETRIS;	 //generates a random number between 0 and 1 less than the defined pieces
     }
-    addPiece(nextPieceID);
+    addPiece();
 
-    mod = 0;	//TODO que hace???
+    mod = 0;	//TODO sacar esto
     //printf("Score: %d\n", score);
 }
 
@@ -116,25 +139,44 @@ void nextPiece() {
     }
 }*/
 
-void addPiece(int nextPieceID) {
+void addPiece() {
 	int i, j, aux;
-	aux = PIECE_SIZE(nextPieceID);
+	aux = PIECE_SIZE(PieceID);	//selects size of piece
 
-	int (*piece)[aux] = (int(*)[aux])(pieces[nextPieceID]); // Cast to matrix
 	for (i = 0; i < aux; i++) {
 		for (j = 0; j < aux; j++) {
-			status[i][j] = 0;
-			if(piece[i][j] == 1) {
-				status[i][j] = 1;
+
+			status[i][j] = 0;	//cleans matrix
+			if(nextPieceStatus[i][j] == 1) {
+				status[i][j] = 1;	//only copies the active state of the next piece
+
 				if(board[i][j + x_coord] > 1) { //if the board has a static piece where the game is trying to put a new piece, 
-					alive = false;
-					gameOver();
-                    return;
+					alive = false;				//it ends the game.
+					gameOver();	//TODO sacar esto
+					return;
 				}
 				else {
 					//status[i][j] = piece[i][j];
-					board[i][j + x_coord] = piece[i][j]; // Place piece at the top, centered horizontally
+					board[i][j + x_coord] = status[i][j]; // Place piece at the top, centered horizontally
 				}
+			}
+		}
+	}
+
+	aux = PIECE_SIZE(nextPieceID);	//selects size of next piece
+	int (*piece)[aux] = (int(*)[aux])(pieces[nextPieceID]); // Cast to matrix
+
+	//cleans the matrix status
+	for (i = 0; i < 4; i++) {
+		for (j = 0; j < 4; j++) {
+			nextPieceStatus[i][j] = 0;
+		}
+	}
+	for (i = 0; i < aux; i++) {
+		for (j = 0; j < aux; j++) {
+
+			if(piece[i][j] == 1) {
+				nextPieceStatus[i][j] = 1;	//only copies the active states.
 			}
 		}
 	}
@@ -152,7 +194,7 @@ void collision() {
     for (i = 0; i < BOARD_HEIGHT; i++) {        //check the whole matrix for 1's and upgrade them to 2's every cycle.
         for (j = 0; j < BOARD_WIDTH; j++) {
             if(board[i][j] == 1) {
-				board[i][j] += nextPieceID+1;		// Allows to differentiate the pieces, for colouring in front-pc.
+				board[i][j] += PieceID+1;		// Allows to differentiate the pieces, for colouring in front-pc.
 			}
         }
     }
@@ -206,7 +248,7 @@ void collision() {
     level = (lines / 10);
 	
 
-    tetromino[nextPieceID]++;
+    tetromino[PieceID]++;
 	//score++;
 	nextPiece(mod);
 }
@@ -241,7 +283,7 @@ void leaderBoard(char inputName[6], unsigned long int inputScore, unsigned int i
 // Rotate function
 void rotateClockwise() {
     int i, j, aux;
-    aux = PIECE_SIZE(nextPieceID);
+    aux = PIECE_SIZE(PieceID);
     
     // OLD Prevent rotation if there's an obstacle
     /*for (i = 0; i < aux; i++) {
@@ -265,22 +307,22 @@ void rotateClockwise() {
     }*/
 
 
-//Prevent rotation if there's an obstacle (math before was wrong but i'm too attached to that code to delete it)
-for (i = y_coord; i < y_coord + aux; i++) {
-    for (j = x_coord; j < x_coord + aux; j++) {
-        if(board[i][j] == 1) {
-            int X = j - x_coord;
-            int Y = i - y_coord;
+	//Prevent rotation if there's an obstacle (math before was wrong but i'm too attached to that code to delete it)
+	for (i = y_coord; i < y_coord + aux; i++) {
+		for (j = x_coord; j < x_coord + aux; j++) {
+			if(board[i][j] == 1) {
+				int X = j - x_coord;
+				int Y = i - y_coord;
 
-            //if(board[(aux - (j - x_coord) + y_coord)][(aux - 1 - (i-y_coord) + x_coord)] > 1) { DEPRICATED
-            if (board[y_coord + X][x_coord + (aux - 1 - Y)] > 1) {
-                //for every active cell in play, check if the coordinate where it should land is already filled by an old piece.
-				//if so, you can't rotate here. The double if instead of an && is only here for readability
-                return;
-            }
-        }
-    }
-}
+				//if(board[(aux - (j - x_coord) + y_coord)][(aux - 1 - (i-y_coord) + x_coord)] > 1) { DEPRICATED
+				if (board[y_coord + X][x_coord + (aux - 1 - Y)] > 1) {
+					//for every active cell in play, check if the coordinate where it should land is already filled by an old piece.
+					//if so, you can't rotate here. The double if instead of an && is only here for readability
+					return;
+				}
+			}
+		}
+	}
 
 	//prevent the piece from rotating if any of its solid blocks will end up outside the boundaries
 	for (i = y_coord; i < y_coord + aux; i++) {
@@ -330,7 +372,7 @@ for (i = y_coord; i < y_coord + aux; i++) {
 
 int shiftPieceDown(int keyPressed) {	//Returns 1 if there's collision, 0 if not. (to display sound)
 	int i, j, aux;
-	aux = PIECE_SIZE(nextPieceID);
+	aux = PIECE_SIZE(PieceID);
 
     // Prevent shifting if the piece cannot move further down
     for (i = y_coord + aux - 1; i >= y_coord; i--) {
@@ -374,7 +416,7 @@ int shiftPieceDown(int keyPressed) {	//Returns 1 if there's collision, 0 if not.
 
 void shiftPieceRight() {
     int i, j, aux;
-    aux = PIECE_SIZE(nextPieceID);
+    aux = PIECE_SIZE(PieceID);
 
     // Prevent shifting if the piece cannot move further right
     for (i = y_coord + aux - 1; i >= y_coord; i--) {
@@ -403,7 +445,7 @@ void shiftPieceRight() {
 
 void shiftPieceLeft() {
     int i, j, aux;
-    aux = PIECE_SIZE(nextPieceID);
+    aux = PIECE_SIZE(PieceID);
 
     // Prevent shifting if the piece cannot move further left
     for (i = y_coord + aux - 1; i >= y_coord; i--) {
