@@ -26,6 +26,8 @@
 #define SCORE_TIME 0.5
 #define END 99
 #define MAX_TOP 5
+#define HEIGHTNUM 7
+#define WIDTHNUM 5
 
 enum {PLAY=1,TOP,STOP,CONT};
 
@@ -40,6 +42,7 @@ static void pausa (char *);
 static void gameover (char *);
 static char make_top (int);
 static void print_top (char);
+static void top (void);
 
 extern int level,score;
 extern int board[BOARD_HEIGHT][BOARD_WIDTH];
@@ -59,7 +62,7 @@ int main (void)
 			play();
 			break;
 		case TOP:
-			/* funcion que muestra top*/
+			top();
 			break;
 		}
 	}
@@ -70,34 +73,28 @@ int main (void)
 
 static char menu (void)
 {
-    char state=PLAY;
+    char state=PLAY,i,j=0;
+    char text[]="PLAY TOP STOP";
 	disp_clear();
 	disp_update();
 	dcoord_t coords={1,4};
 	joyinfo_t info;
-	letras_on (coords,'P');
-	coords.x+=4;
-	letras_on (coords,'L');
-	coords.x+=4;
-	letras_on (coords,'A');
-	coords.x+=4;
-	letras_on (coords,'Y');
-	coords.x=1;
-	coords.y+=6;
-	letras_on (coords,'T');
-	coords.x+=4;
-	letras_on (coords,'O');
-	coords.x+=4;
-	letras_on (coords,'P');
-	coords.x=1;
-	coords.y+=5;
-	letras_on (coords,'S');
-	coords.x+=4;
-	letras_on (coords,'T');
-	coords.x+=4;
-	letras_on (coords,'O');
-	coords.x+=4;
-	letras_on (coords,'P');
+	for(i=0;i<strlen(text);i++)
+	{
+		if(text[i]!=' ')
+		{
+			letras_on(coords,text[i]);
+			(coords.x)+=4;
+		}
+		else
+		{
+			(coords.x)=1;
+			if(j++)
+				(coords.y)+=5;
+			else
+				(coords.y)+=6;
+		}
+	}
 	coords.x=0;
 	do
 	{
@@ -133,6 +130,62 @@ static char menu (void)
 	disp_update();
 	return state;
 }
+
+static void top (void)
+{
+	int i=0,j,k,f, users[5]={0};
+	char topusers[5][4]={0};
+	dcoord_t coord={0,15};
+	FILE * ftag = fopen("Top/tag.txt", "r");
+	if(!ftag)
+	{
+		printf("Error al abrir archivo\n");
+		fclose(ftag);
+	}
+	while (i < MAX_TOP && fscanf(ftag, "%d", &users[i]) == 1)
+	{
+		i++;
+	}
+	fclose(ftag);
+	for(i=0;i<MAX_TOP;i++)
+	{
+		sprintf(topusers[i],"%d",users[i]);
+	}
+	for(k=0;k<((HEIGHTNUM+1)*MAX_TOP+MAX_HEIGHT);k++)
+	{
+		for(i=0;i<MAX_TOP;i++)
+		{
+			(coord.x)=0;
+			for(j=0,f=0;j<strlen(topusers[i]);j++)
+			{
+				letras_on(coord,topusers[i][j]);
+				if(f++)
+					(coord.x)+=WIDTHNUM;
+				else
+					(coord.x)+=WIDTHNUM+1;
+
+			}
+			(coord.y)+=(HEIGHTNUM+1);
+		}
+		(coord.y)-=(HEIGHTNUM+1)*MAX_TOP;
+		usleep(SEC/20);
+		for(i=0;i<MAX_TOP;i++)
+		{
+			(coord.x)=0;
+			for(j=0,f=0;j<strlen(topusers[i]);j++)
+			{
+				letras_off(coord,topusers[i][j]);
+				if(f++)
+					(coord.x)+=WIDTHNUM;
+				else
+					(coord.x)+=WIDTHNUM+1;
+			}
+			(coord.y)+=(HEIGHTNUM+1);
+		}
+		(coord.y)-=(HEIGHTNUM+1)*MAX_TOP+1;
+	}
+}
+
 
 
 static int tag (void)
