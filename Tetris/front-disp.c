@@ -28,6 +28,7 @@
 #define MAX_TOP 5
 #define HEIGHTNUM 7
 #define WIDTHNUM 5
+#define EASTER_EGG 999
 
 
 enum {PLAY=1,TOP,STOP,CONT};
@@ -309,19 +310,47 @@ static void play (void)
 				info=joy_read();
 				if((info.y)<-50)
 				{
-					shiftPieceDown(1);
+					if(user==EASTER_EGG)
+					{
+						rotateClockwise();
+					}
+					else
+					{
+						shiftPieceDown(1);
+					}
 				}
 				else if((info.x)<-50)
 				{
-					shiftPieceLeft();
+					if(user==EASTER_EGG)
+					{
+						shiftPieceRight();
+					}
+					else
+					{
+						shiftPieceLeft();
+					}
 				}
 				else if((info.x)>50)
 				{
-					shiftPieceRight();
+					if(user==EASTER_EGG)
+					{
+						shiftPieceLeft();
+					}
+					else
+					{
+						shiftPieceRight();
+					}
 				}
 				else if((info.y)>50)
 				{
-					rotateClockwise();
+					if(user==EASTER_EGG)
+					{
+						shiftPieceDown(1);
+					}
+					else
+					{
+						rotateClockwise();
+					}
 				}
 				else if((info.sw)==J_PRESS)
 				{
