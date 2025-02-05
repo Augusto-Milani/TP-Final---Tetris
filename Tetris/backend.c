@@ -327,7 +327,9 @@ void rotateClockwise() {
 	//prevent the piece from rotating if any of its solid blocks will end up outside the boundaries
 	for (i = y_coord; i < y_coord + aux; i++) {
         for (j = x_coord; j < x_coord + aux; j++) {
-			if (board[i][j] == 1 &&  ((aux - 1 - (i-y_coord) + x_coord) < 0 || (aux - 1 - (i-y_coord) + x_coord) >= BOARD_WIDTH)) { 
+            int X = j - x_coord;
+            int Y = i - y_coord;
+			if (board[i][j] == 1 &&  ((aux - 1 - Y + x_coord) < 0 || (aux - 1 - Y + x_coord) >= BOARD_WIDTH || (y_coord + X) >= BOARD_HEIGHT)) { 
 				/* This statement deserves an explanation. for every moving block, check IF said block would fall outside the
 				boundaries of the board if it were rotated. (i-y_coord) gets the position of the block relative to the top left
 				corner. (aux - 1 - (i-y_coord)) is where the piece should land in the X axis, relative to the top left corner.
@@ -337,7 +339,6 @@ void rotateClockwise() {
 			}
 		}
 	}
-
     // Rotates
     //alternativeRotation();
     for (i = 0; i < aux; i++) {
@@ -384,7 +385,7 @@ int shiftPieceDown(int keyPressed) {	//Returns 1 if there's collision, 0 if not.
 
                 // Check if the cell is at the bottom or above a stationary block
                 if (i >= BOARD_HEIGHT - 1 || board[i + 1][j] > 1) {
-                    printf("piece collided, pieceID was %d, i,j coords were (%d, %d)\n", nextPieceID, i, j);
+                    //printf("piece collided, pieceID was %d, i,j coords were (%d, %d)\n", nextPieceID, i, j);
                     collision();
                     return 1;
                 }
