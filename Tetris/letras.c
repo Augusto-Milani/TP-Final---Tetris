@@ -138,6 +138,7 @@ void letras_on (dcoord_t coords,char let)
 	case 'S':
 		for(i=0;i<3;i++)
 		{
+			CHECK
 			disp_write(coords,D_ON);
 			(coords.x)++;
 		}
@@ -145,21 +146,25 @@ void letras_on (dcoord_t coords,char let)
 		for(i=0;i<2;i++)
 		{
 			(coords.y)--;
+			CHECK
 			disp_write(coords,D_ON);
 		}
 		for(i=0;i<2;i++)
 		{
 			(coords.x)--;
+			CHECK
 			disp_write(coords,D_ON);
 		}
 		for(i=0;i<2;i++)
 		{
 			(coords.y)--;
+			CHECK
 			disp_write(coords,D_ON);
 		}
 		for(i=0;i<2;i++)
 		{
 			(coords.x)++;
+			CHECK
 			disp_write(coords,D_ON);
 		}
 		break;
@@ -324,6 +329,27 @@ void letras_on (dcoord_t coords,char let)
 			disp_write(coords,D_ON);
 			(coords.y)++;
 		}
+		break;
+	case 'I':
+		for(i=0;i<3;i++)
+		{
+			CHECK
+			disp_write(coords,D_ON);
+			(coords.x)++;
+		}
+		(coords.x)-=2;
+		for(i=0;i<4;i++)
+		{
+			(coords.y)--;
+			CHECK
+			disp_write(coords,D_ON);
+		}
+		(coords.x)--;
+		CHECK
+		disp_write(coords,D_ON);
+		(coords.x)+=2;
+		CHECK
+		disp_write(coords,D_ON);
 		break;
 	case '0':
 		(coords.y)--;
@@ -770,6 +796,7 @@ void letras_off (dcoord_t coords,char let)
 	case 'S':
 		for(i=0;i<3;i++)
 		{
+			CHECK
 			disp_write(coords,D_OFF);
 			(coords.x)++;
 		}
@@ -777,21 +804,25 @@ void letras_off (dcoord_t coords,char let)
 		for(i=0;i<2;i++)
 		{
 			(coords.y)--;
+			CHECK
 			disp_write(coords,D_OFF);
 		}
 		for(i=0;i<2;i++)
 		{
 			(coords.x)--;
+			CHECK
 			disp_write(coords,D_OFF);
 		}
 		for(i=0;i<2;i++)
 		{
 			(coords.y)--;
+			CHECK
 			disp_write(coords,D_OFF);
 		}
 		for(i=0;i<2;i++)
 		{
 			(coords.x)++;
+			CHECK
 			disp_write(coords,D_OFF);
 		}
 		break;
@@ -956,6 +987,27 @@ void letras_off (dcoord_t coords,char let)
 			disp_write(coords,D_OFF);
 			(coords.y)++;
 		}
+		break;
+	case 'I':
+		for(i=0;i<3;i++)
+		{
+			CHECK
+			disp_write(coords,D_OFF);
+			(coords.x)++;
+		}
+		(coords.x)-=2;
+		for(i=0;i<4;i++)
+		{
+			(coords.y)--;
+			CHECK
+			disp_write(coords,D_OFF);
+		}
+		(coords.x)--;
+		CHECK
+		disp_write(coords,D_OFF);
+		(coords.x)+=2;
+		CHECK
+		disp_write(coords,D_OFF);
 		break;
 	case '0':
 			(coords.y)--;

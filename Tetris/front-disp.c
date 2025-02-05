@@ -7,9 +7,14 @@
  *      Author: mariano
  */
 
+
+
+
+#include <stdio.h>
 #include <stdint.h>
 #include <unistd.h>
 #include <string.h>//para el strlen para saber cuantos caracteres tiene sin el '/0'
+#include <stdbool.h>
 #include "Libs/disdrv.h"
 #include "Libs/joydrv.h"
 #include "letras.h"
@@ -18,11 +23,12 @@
 #define MAX_WIDTH 16
 #define SEC 1000000
 #define FALL_TIME 1.5//tiempo que espera para caer en sec
-#define SCORE_TIME 0.5
+#define SCORE_TIME 1.5
 #define END 99
 #define MAX_TOP 5
 #define HEIGHTNUM 7
 #define WIDTHNUM 5
+
 
 enum {PLAY=1,TOP,STOP,CONT};
 
@@ -38,6 +44,12 @@ static void gameover (char *);
 static char make_top (int);
 static void print_top (char);
 static void top (void);
+static void print_tetris (void);
+static void nextpiece_draw (void);
+
+extern int level,score,lines;
+extern int board[BOARD_HEIGHT][BOARD_WIDTH],nextPieceStatus [4][4];
+extern bool alive;
 
 
 int main (void)
@@ -45,6 +57,7 @@ int main (void)
 	char state;
 	disp_init();
 	joy_init();
+	print_tetris();
 	while((state=menu())!=STOP)
 	{
 		switch(state)
@@ -61,6 +74,26 @@ int main (void)
 	return 0;
 }
 
+static void print_tetris (void)
+{
+	char text[]="TETRIS",i,j;
+	dcoord_t coord={15,9};
+	for(i=0;i<(strlen(text)*4+16);i++)
+	{
+		for(j=0;j<strlen(text);j++)
+		{
+			letras_on(coord,text[j]);
+			(coord.x)+=4;
+		}
+		(coord.x)-=4*strlen(text);
+		for(j=0;j<strlen(text);j++)
+		{
+			letras_off(coord,text[j]);
+			(coord.x)+=4;
+		}
+		(coord.x)-=4*strlen(text)+1;
+	}
+}
 
 static char menu (void)
 {
@@ -225,14 +258,15 @@ static void play (void)
 	int aux, i=0;
 	char flag=CONT,top;
 	int user;
-	char nums[20];
-	memset(nums,END,19);// inicializa todo el string en un numero cualquierra mayo a 10
+	char nums[20]={0};
 	joyinfo_t info;
-	clock_t last_fall_time = clock(),last_number_time;
+	clock_t last_fall_time = clock(),last_number_time = clock();
 	alive=true;
 	user=tag();
 	printf("%d",user);
 	score=0;
+	lines=0;
+	level=0;//reinicia todas las variables a 0
 	initBoard();
 	nextPiece();
 	while(flag!=STOP)
@@ -243,8 +277,10 @@ static void play (void)
 		while(level==aux && flag != STOP)
 		{
 			board_redraw();
+			nextpiece_draw();
 			clock_t current_time = clock();
-			double elapsed1_time = (double)(current_time - last_fall_time) / CLOCKS_PER_SEC*100,elapsed2_time = (double)(current_time - last_number_time) / CLOCKS_PER_SEC*10;
+			double elapsed1_time = (double)(current_time - last_fall_time) / CLOCKS_PER_SEC*100,elapsed2_time = (double)(current_time - last_number_time) / CLOCKS_PER_SEC*100;
+			//guarda en cada caso el tiempo que paso desde que se relizo la accion
 			if(elapsed1_time >= FALL_TIME*(10.0/(10.0+level)))
 			{
 				shiftPieceDown(0);
@@ -253,8 +289,9 @@ static void play (void)
 			else if(elapsed2_time >= SCORE_TIME)
 			{
 				dcoord_t coord={11,7};
+				if(i!=0)
 				letras_off(coord,nums[i-1]);
-				if(nums[i]==END)//chequea si ya esta en el ultimo numero
+				if(i==strlen(nums)+1)//chequea si ya esta en uno mas que el ultimo para hacer un corte entre el primer score y el siguiente
 				{
 					sprintf(nums,"%d",score);//funcion que guarda cada dijito del int en un arreglo de chars
 					i=0;
@@ -291,7 +328,7 @@ static void play (void)
 					pausa(&flag);
 				}
 			}
-			usleep(SEC/10);//pausa para no tomar demasiados valores
+			usleep(SEC/8);//pausa para no tomar demasiados valores
 		}
 	}
 	top=make_top(user);
@@ -325,7 +362,6 @@ static void gameover (char * flag)
 		letras_on(coord,'E');
 		(coord.x)+=4;
 		letras_on(coord,'R');
-		usleep(SEC/12);
 
 		(coord.x)-=33;
 		letras_off(coord,'G');
@@ -693,5 +729,60 @@ static char make_top(int user)
     fclose(ftag);
 
     return top;
+}
+
+
+static void nextpiece_draw(void)
+{
+    int i, j, f = 0;
+    static int k = 0; // arranca en 0
+    static int aux[4][4]; //es estático y se mantiene entre llamadas
+    if (k++ == 0) // Inicializar aux solo la primera vez
+    {
+        for (i = 0; i < 4; i++)
+        {
+            for (j = 0; j < 4; j++)
+            {
+                aux[i][j] = nextPieceStatus[i][j];
+            }
+        }
+    }
+    for (i = 0; i < 4; i++)
+    {
+        for (j = 0; j < 4; j++)
+        {
+            if (aux[i][j] != nextPieceStatus[i][j])
+            {
+                f++;
+            }
+        }
+    }
+    if (f > 0) // Solo limpiar si hay cambios
+    {
+        for (i = 0; i < 4; i++)
+        {
+            for (j = 0; j < 4; j++)
+            {
+                if (aux[i][j]) // Solo apagar si antes estaba encendido
+                {
+                    dcoord_t coord = {11 + (uint8_t)j, 10 + (uint8_t)i};
+                    disp_write(coord, D_OFF);
+                }
+                aux[i][j] = nextPieceStatus[i][j]; // Actualizar aux con los nuevos valores
+            }
+        }
+    }
+    for (i = 0; i < 4; i++)
+    {
+        for (j = 0; j < 4; j++)
+        {
+            dcoord_t coord = {11 + (uint8_t)j, 10 + (uint8_t)i};
+            if (nextPieceStatus[i][j])
+            {
+                disp_write(coord, D_ON);
+            }
+        }
+    }
+    disp_update();
 }
 
