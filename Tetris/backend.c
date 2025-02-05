@@ -377,15 +377,19 @@ int shiftPieceDown(int keyPressed) {	//Returns 1 if there's collision, 0 if not.
     // Prevent shifting if the piece cannot move further down
     for (i = y_coord + aux - 1; i >= y_coord; i--) {
         for (j = x_coord; j <= x_coord + aux - 1; j++) {
+            //only check if the i,j coords are inside the board area
+            if ((i < BOARD_HEIGHT && i >= 0) && (j < BOARD_WIDTH && j >= 0)) {
             // Only check cells that are part of the piece
             if (board[i][j] == 1) {
 
                 // Check if the cell is at the bottom or above a stationary block
                 if (i >= BOARD_HEIGHT - 1 || board[i + 1][j] > 1) {
+                    printf("piece collided, pieceID was %d, i,j coords were (%d, %d)\n", nextPieceID, i, j);
                     collision();
                     return 1;
                 }
             }
+        }
         }
     }
     // Shifts
