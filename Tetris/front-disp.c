@@ -216,7 +216,7 @@ static int tag (void)
 {
 	dcoord_t coords={1,6};
 	joyinfo_t info;
-	int num=0,i,aux=0;
+	int num=0,i;
 	int user=0;
 	letras_on(coords,'T');
 	(coords.x)+=4;
@@ -268,7 +268,6 @@ static void play (void)
 	lines=0;
 	level=0;//reinicia todas las variables a 0
 	initBoard();
-	nextPiece();
 	while(flag!=STOP)
 	{
 		print_level (level);
@@ -276,6 +275,7 @@ static void play (void)
 		aux=level;
 		while(level==aux && flag != STOP)
 		{
+			printBoard();
 			board_redraw();
 			nextpiece_draw();
 			clock_t current_time = clock();
@@ -635,7 +635,6 @@ static void playini(void)
 {
 	dcoord_t coord;
 	(coord.x)=14;
-	char i;
 	disp_clear();
 	disp_update();
 	(coord.y)=0;
@@ -653,7 +652,7 @@ static char make_top(int user)
 {
     char top = 0;
     int scr[MAX_TOP] = {0}, users[MAX_TOP] = {0};
-    int i = 0, j = MAX_TOP, k = 0, aux1;
+    int i = 0, j = MAX_TOP, k = 0;
 
     FILE *fscore = fopen("Top/score.txt", "r");
     FILE *ftag = fopen("Top/tag.txt", "r");
@@ -765,7 +764,7 @@ static void nextpiece_draw(void)
             {
                 if (aux[i][j]) // Solo apagar si antes estaba encendido
                 {
-                    dcoord_t coord = {11 + (uint8_t)j, 10 + (uint8_t)i};
+                    dcoord_t coord = {12 + (uint8_t)j, 10 + (uint8_t)i};
                     disp_write(coord, D_OFF);
                 }
                 aux[i][j] = nextPieceStatus[i][j]; // Actualizar aux con los nuevos valores
@@ -776,7 +775,7 @@ static void nextpiece_draw(void)
     {
         for (j = 0; j < 4; j++)
         {
-            dcoord_t coord = {11 + (uint8_t)j, 10 + (uint8_t)i};
+            dcoord_t coord = {12 + (uint8_t)j, 10 + (uint8_t)i};
             if (nextPieceStatus[i][j])
             {
                 disp_write(coord, D_ON);
