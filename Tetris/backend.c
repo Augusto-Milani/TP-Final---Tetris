@@ -1,12 +1,17 @@
+/***************************************************************************//**
+  @file     backend.c
+  @brief    Backend del TPF Tetris
+  @author   Lety
+ ******************************************************************************/
+
 #include "backend.h"
 #include "pieces.h"
-#include <stdbool.h>
-
-int board[BOARD_HEIGHT][BOARD_WIDTH], nextPieceStatus[4][4];
-int PieceID, nextPieceID, score, top, lines, level, mod = 0, tetromino[PIECES_TETRIS];	//TODO sacar mod (testing)
-extern bool alive;
 
 #define PIECE_SIZE(x) ((x)!=6	?	((x)!=3 ? 3 : 2)	:	4)	// if x is an I, it's 4x4, if it's an O, its 2x2. Otherwise, it's 3x3
+
+int board[BOARD_HEIGHT][BOARD_WIDTH], nextPieceStatus[4][4];
+int PieceID, nextPieceID, score, lines, level, mod, tetromino[PIECES_TETRIS];	//TODO sacar mod (testing)
+bool alive;
 
 static int x_coord, y_coord;
 static void* pieces[PIECES_TETRIS] = {(void*)T, (void*)J, (void*)Z, (void*)O, (void*)S, (void*)L, (void*)I};
@@ -143,10 +148,16 @@ void addPiece() {
 	int i, j, aux;
 	aux = PIECE_SIZE(PieceID);	//selects size of piece
 
+	//cleans the matrix status
+	for (i = 0; i < 4; i++) {
+		for (j = 0; j < 4; j++) {
+			status[i][j] = 0;
+		}
+	}
+
 	for (i = 0; i < aux; i++) {
 		for (j = 0; j < aux; j++) {
 
-			status[i][j] = 0;	//cleans matrix
 			if(nextPieceStatus[i][j] == 1) {
 				status[i][j] = 1;	//only copies the active state of the next piece
 

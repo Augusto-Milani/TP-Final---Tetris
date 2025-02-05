@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <stdlib.h> //TEMP, JUST A STUB
 #include <time.h> //TEMP, JUST A STUB
+#include <stdbool.h>
 
 #define BOARD_HEIGHT 20
 #define BOARD_WIDTH 10
@@ -12,6 +13,10 @@
 #endif
 
 #define PIECES_TETRIS 7		// Number of diferent pieces in Tetris
+
+extern int board[BOARD_HEIGHT][BOARD_WIDTH], nextPieceStatus[4][4];
+extern int PieceID, nextPieceID, score, lines, level, mod, tetromino[PIECES_TETRIS];	//TODO sacar mod (testing)
+extern bool alive;
 
 void nextPiece();
 

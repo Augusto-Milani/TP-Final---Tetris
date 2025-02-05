@@ -32,13 +32,8 @@ typedef struct {	// Facilito usar allegro sin pasar muchos argumentos entre func
 		bool redraw;					// Bandera para dibujar.
 	} argument_t;
 
-extern int score, lines, level, mod, tetromino[PIECES_TETRIS], PieceID, nextPieceID;	//TODO sacar mod testing
-extern int nextPieceStatus[4][4];
 
 static int top;
-
-bool alive = true;
-
 static int TITLE_WIDTH, TITLE_HEIGHT, BACK_WIDTH, BACK_HEIGHT,
 			TILE_WIDTH, TILE_HEIGHT, GAMEOVER_WIDTH, GAMEOVER_HEIGHT;
 static int dx, dy;	//Centrar imagen en pantalla.
