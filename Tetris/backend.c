@@ -19,6 +19,8 @@ void* pieces[PIECES_TETRIS] = {(void*)T, (void*)J, (void*)Z, (void*)O, (void*)S,
 static int status[4][4];    //This matrix stores a copy of the piece that will spawn in board, so we can do the rotate logic in it instead
                             //of using the ones defined in pieces.h
 int nextPieceID;
+int currentPieceID;
+int nextPieceMatrix[4][4];
 
 
 //**********************************************
@@ -73,6 +75,7 @@ void initBoard() {
         }
     }
     leaderBoard("------", 0, 0, 1);
+    nextPieceID = rand() % PIECES_TETRIS; //generate the ID for the first piece of the game
     
     
 }
@@ -80,6 +83,8 @@ void initBoard() {
 void nextPiece() {
 	x_coord = (int)BOARD_WIDTH/2 - 2;
 	y_coord = 0;
+    addPiece(nextPieceID); //add the next piece to the board
+    currentPieceID = nextPieceID; //now it's not the next piece anymore, it's the current piece
 
     if(mod) { //mod is a variable used only for testing purposes, kinda like a cheat code. don't tell anyone! 
         nextPieceID = 6;
@@ -87,10 +92,11 @@ void nextPiece() {
     else {
         nextPieceID = rand() % PIECES_TETRIS;	 //generates a random number between 0 and 1 less than the defined pieces
     }
-    addPiece(nextPieceID);
+    //addPiece(nextPieceID);
 
     mod = 0;	//TODO que hace???
-    //printf("Score: %d\n", score);
+    printToNextPieceWindow(nextPieceID);
+
 }
 
 
@@ -114,11 +120,11 @@ void nextPiece() {
     }
 }*/
 
-void addPiece(int nextPieceID) {
+void addPiece(int ID) {
 	int i, j, aux;
-	aux = PIECE_SIZE(nextPieceID);
+	aux = PIECE_SIZE(ID);
 
-	int (*piece)[aux] = (int(*)[aux])(pieces[nextPieceID]); // Cast to matrix
+	int (*piece)[aux] = (int(*)[aux])(pieces[ID]); // Cast to matrix
 	for (i = 0; i < aux; i++) {
 		for (j = 0; j < aux; j++) {
 			status[i][j] = 0;
@@ -149,7 +155,7 @@ void collision() {
     for (i = 0; i < BOARD_HEIGHT; i++) {        //check the whole matrix for 1's and upgrade them to 2's every cycle.
         for (j = 0; j < BOARD_WIDTH; j++) {
             if(board[i][j] == 1) {
-				board[i][j] += nextPieceID+1;		// Allows to differentiate the pieces, for colouring in front-pc.
+				board[i][j] += currentPieceID+1;		// Allows to differentiate the pieces, for colouring in front-pc.
 			}
         }
     }
@@ -203,9 +209,10 @@ void collision() {
     level = (lines / 10);
 	
 
-    tetromino[nextPieceID]++;
+    tetromino[currentPieceID]++;
 	//score++;
 	nextPiece(mod);
+    
 }
 
 
@@ -238,7 +245,7 @@ void leaderBoard(char inputName[6], unsigned long int inputScore, unsigned int i
 // Rotate function
 void rotateClockwise() {
     int i, j, aux;
-    aux = PIECE_SIZE(nextPieceID);
+    aux = PIECE_SIZE(currentPieceID);
     
     // OLD Prevent rotation if there's an obstacle
     /*for (i = 0; i < aux; i++) {
@@ -282,7 +289,9 @@ for (i = y_coord; i < y_coord + aux; i++) {
 	//prevent the piece from rotating if any of its solid blocks will end up outside the boundaries
 	for (i = y_coord; i < y_coord + aux; i++) {
         for (j = x_coord; j < x_coord + aux; j++) {
-			if (board[i][j] == 1 &&  ((aux - 1 - (i-y_coord) + x_coord) < 0 || (aux - 1 - (i-y_coord) + x_coord) >= BOARD_WIDTH)) { 
+            int X = j - x_coord;
+            int Y = i - y_coord;
+			if (board[i][j] == 1 &&  ((aux - 1 - Y + x_coord) < 0 || (aux - 1 - Y + x_coord) >= BOARD_WIDTH || (y_coord + X) >= BOARD_HEIGHT)) { 
 				/* This statement deserves an explanation. for every moving block, check IF said block would fall outside the
 				boundaries of the board if it were rotated. (i-y_coord) gets the position of the block relative to the top left
 				corner. (aux - 1 - (i-y_coord)) is where the piece should land in the X axis, relative to the top left corner.
@@ -292,7 +301,6 @@ for (i = y_coord; i < y_coord + aux; i++) {
 			}
 		}
 	}
-
     // Rotates
     //alternativeRotation();
     for (i = 0; i < aux; i++) {
@@ -327,23 +335,27 @@ for (i = y_coord; i < y_coord + aux; i++) {
 
 int shiftPieceDown(int keyPressed) {	//Returns 1 if there's collision, 0 if not. (to display sound)
 	int i, j, aux;
-	aux = PIECE_SIZE(nextPieceID);
+	aux = PIECE_SIZE(currentPieceID);
 
     // Prevent shifting if the piece cannot move further down
     for (i = y_coord + aux - 1; i >= y_coord; i--) {
         for (j = x_coord; j <= x_coord + aux - 1; j++) {
+            //only check if the i,j coords are inside the board area
+            if ((i < BOARD_HEIGHT && i >= 0) && (j < BOARD_WIDTH && j >= 0)) {
             // Only check cells that are part of the piece
             if (board[i][j] == 1) {
 
                 // Check if the cell is at the bottom or above a stationary block
                 if (i >= BOARD_HEIGHT - 1 || board[i + 1][j] > 1) {
+                    //printf("piece collided, pieceID was %d, i,j coords were (%d, %d)\n", nextPieceID, i, j);
                     collision();
+                    //printf("piece collided, pieceID was %d, i,j coords were (%d, %d)\n", nextPieceID, i, j);
                     return 1;
                 }
             }
+            }
         }
-    }
-    // Shifts
+    }    // Shifts
     for (i = y_coord + aux-1; i >= y_coord; i--) { // Starts from the bottom row
         for (j = x_coord; j <= x_coord + aux-1; j++) {
         	if(board[i][j] == 1) {
@@ -371,7 +383,7 @@ int shiftPieceDown(int keyPressed) {	//Returns 1 if there's collision, 0 if not.
 
 void shiftPieceRight() {
     int i, j, aux;
-    aux = PIECE_SIZE(nextPieceID);
+    aux = PIECE_SIZE(currentPieceID);
 
     // Prevent shifting if the piece cannot move further right
     for (i = y_coord + aux - 1; i >= y_coord; i--) {
@@ -400,7 +412,7 @@ void shiftPieceRight() {
 
 void shiftPieceLeft() {
     int i, j, aux;
-    aux = PIECE_SIZE(nextPieceID);
+    aux = PIECE_SIZE(currentPieceID);
 
     // Prevent shifting if the piece cannot move further left
     for (i = y_coord + aux - 1; i >= y_coord; i--) {
@@ -425,4 +437,22 @@ void shiftPieceLeft() {
     }
 
     x_coord--;
+}
+
+void printToNextPieceWindow(int ID) {
+    int aux = PIECE_SIZE(ID);
+    //int nextPieceMatrix[4][4]; Will be declared as global for now, the idea is to have it initialized here.
+
+    for (int i = 0; i <= 4; i++) {
+        for (int j = 0; j <= 4; j++) {
+            nextPieceMatrix[i][j] = 0;      //Delete whatever was there before
+            
+            if (i >= aux || j >= aux) {     //If writing to a position outside the limits of the piece, write a zero.                                            
+                nextPieceMatrix[i][j] = 0;  //E.g. writing column 3 of an O piece. 
+            }
+            else {
+                nextPieceMatrix[i][j] = (ID + 2); //This is for coloring purposes in the PC frontend. 
+            }
+        }
+    }
 }

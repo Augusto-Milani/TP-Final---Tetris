@@ -27,6 +27,6 @@ void collision();
 void initBoard();
 void gameOver();
 void leaderBoard(char[6], unsigned long int, unsigned int, int);
-//void alternativeRotation(void);
+void printToNextPieceWindow(int);
 
 #endif /* TETRIS_BACKEND_H_ */
