@@ -123,27 +123,6 @@ void nextPiece() {
     //printf("Score: %d\n", score);
 }
 
-
-/*void addPiece(int board[20][10], int nextPieceID) {
-    if (nextPieceID == 0) { //ID 0 means the piece is an L
-         for(int i = 0; i <= 3; i++) {
-            for(int j = 3; j <= 6; j++) {
-                int (*piece)[3] = (int(*)[3])(pieces[nextPieceID]);
-                board[i][j] = piece[i-3][j];
-            }
-         }
-    }
-
-    else if (nextPieceID == 1) { //ID 1 means the piece is an I
-         for(int i = 0; i <= 4; i++) {
-            for(int j = 3; j <= 6; j++) {
-                int (*piece)[4] = (int(*)[4])(pieces[nextPieceID]);
-                board[i][j] = piece[i-3][j];
-            }
-         }
-    }
-}*/
-
 void addPiece() {
 	int i, j, aux;
 	aux = PIECE_SIZE(PieceID);	//selects size of piece
@@ -368,19 +347,6 @@ void rotateClockwise() {
     }
 }
 
-/*alternativeRotation() {
-    int aux = PIECE_SIZE(nextPieceID);
-    for(int i = y_coord; i < y_coord + aux; i++) {
-        for (int j = x_coord; j < x_coord + aux; j++) {
-            if(board[i][j] == 1) {
-                
-                board[(aux - (j - x_coord) + y_coord)][(aux - 1 - (i-y_coord) + x_coord)] = 1;
-                board[i][j] = 0;
-            }
-        }
-    }
-}*/
-
 
 int shiftPieceDown(int keyPressed) {	//Returns 1 if there's collision, 0 if not. (to display sound)
 	int i, j, aux;
@@ -396,7 +362,7 @@ int shiftPieceDown(int keyPressed) {	//Returns 1 if there's collision, 0 if not.
 
                 // Check if the cell is at the bottom or above a stationary block
                 if (i >= BOARD_HEIGHT - 1 || board[i + 1][j] > 1) {
-                    //printf("piece collided, pieceID was %d, i,j coords were (%d, %d)\n", nextPieceID, i, j);
+                    //printf("piece collided, pieceID was %d, i,j coords were (%d, %d)\n", PieceID, i, j);
                     collision();
                     return 1;
                 }
@@ -407,12 +373,14 @@ int shiftPieceDown(int keyPressed) {	//Returns 1 if there's collision, 0 if not.
     // Shifts
     for (i = y_coord + aux-1; i >= y_coord; i--) { // Starts from the bottom row
         for (j = x_coord; j <= x_coord + aux-1; j++) {
+            if(i >= 0 && i < BOARD_HEIGHT && j >= 0 && j < BOARD_WIDTH) {
         	if(board[i][j] == 1) {
         		board[i + 1][j] = board[i][j];
         	}
         	if(board[i][j] == 1) {
 				board[i][j] = 0;
 			}
+            }
         }
     }
     for (j = x_coord; j < x_coord + aux; j++) {
@@ -426,7 +394,7 @@ int shiftPieceDown(int keyPressed) {	//Returns 1 if there's collision, 0 if not.
     if(keyPressed) {
         score++;
     }
-
+    printf("Got here!\n");
     return 0;
 }
 
@@ -449,13 +417,14 @@ void shiftPieceRight() {
     // Shift the piece right
     for (i = y_coord + aux - 1; i >= y_coord; i--) {
         for (j = x_coord + aux - 1; j >= x_coord; j--) {
-            if (board[i][j] == 1) { // Only move if it's part of the active piece
-                board[i][j + 1] = board[i][j]; //Shift piece to the right
-                board[i][j] = 0; // Clear original position
+            if((i >= 0 && i < BOARD_HEIGHT) && (j >= 0 && j < BOARD_WIDTH)) {
+                if (board[i][j] == 1) { // Only move if it's part of the active piece
+                    board[i][j + 1] = board[i][j]; //Shift piece to the right
+                    board[i][j] = 0; // Clear original position
+                }
             }
         }
     }
-
     x_coord++;
 }
 
@@ -478,12 +447,13 @@ void shiftPieceLeft() {
     // Shift the piece left
     for (i = y_coord + aux - 1; i >= y_coord; i--) {
         for (j = x_coord; j < x_coord + aux; j++) {
-            if (board[i][j] == 1) { // Only move if it's part of the active piece
-                board[i][j - 1] = board[i][j]; // Shift piece to the left
-                board[i][j] = 0; // Clear old position
+            if((i >= 0 && i < BOARD_HEIGHT) && (j >= 0 && j < BOARD_WIDTH)) {
+                if (board[i][j] == 1) { // Only move if it's part of the active piece
+                    board[i][j - 1] = board[i][j]; // Shift piece to the left
+                    board[i][j] = 0; // Clear old position
+                }
             }
         }
     }
-
     x_coord--;
 }
