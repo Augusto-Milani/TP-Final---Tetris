@@ -4,32 +4,45 @@
   @author   Lety
  ******************************************************************************/
 
+//Headers
 #include "backend.h"
 #include "pieces.h"
 
+//Macros
 #define PIECE_SIZE(x) ((x)!=6	?	((x)!=3 ? 3 : 2)	:	4)	// if x is an I, it's 4x4, if it's an O, its 2x2. Otherwise, it's 3x3
 
+//Global variables
 int board[BOARD_HEIGHT][BOARD_WIDTH], nextPieceStatus[4][4];
-int PieceID, nextPieceID, score, lines, level, mod, tetromino[PIECES_TETRIS];	//TODO sacar mod (testing)
+int PieceID, nextPieceID, score, lines, level, tetromino[PIECES_TETRIS];
 bool alive;
 
-static int x_coord, y_coord;
+//Local functions
+static void printMatrix_3by3(int[][3]);
+static void printMatrix_4by4(int[][4]);
+static void printBoard();
+static void addPiece();
+static void nextPiece();
+static void collision();
+static void gameOver();
+static void leaderBoard(char[6], unsigned long int, unsigned int, int);
+
+
+//Local variables
 static void* pieces[PIECES_TETRIS] = {(void*)T, (void*)J, (void*)Z, (void*)O, (void*)S, (void*)L, (void*)I};
-//This array holds a pointer to each piece, it was made global as most functions use it in some way.
-//The order is not trivial, there's a complementary macro to this array that stores the size of each piece, to make the functions
-//accept more than a single size for matrix. We decided this was easier than passing around the size of each piece as an arg. 
+	//This array holds a pointer to each piece, it was made global as most functions use it in some way.
+	//The order is not trivial, there's a complementary macro to this array that stores the size of each piece, to make the functions
+	//accept more than a single size for matrix. We decided this was easier than passing around the size of each piece as an arg.
 
 static int status[4][4];    //This matrix stores a copy of the piece that will spawn in board, so we can do the rotate logic in it instead
                             //of using the ones defined in pieces.h
 
+static int x_coord, y_coord;	//coords of the piece in the matrix "board"
 
 //**********************************************
 //*           DEBUGGING FUNCTIONS              *
 //**********************************************
 
-
-
-void printMatrix_3by3(int matrix[][3]) { //all 3's in this code are because we're working with a fixed size of 3.
+static void printMatrix_3by3(int matrix[][3]) { //all 3's in this code are because we're working with a fixed size of 3.
 	int i, j;
 	for (i = 0; i < 3; i++) {        //also, this is a stub
         for (j = 0; j < 3; j++) {
@@ -40,7 +53,7 @@ void printMatrix_3by3(int matrix[][3]) { //all 3's in this code are because we'r
     printf("\n");
 }
 
-void printMatrix_4by4(int matrix[][4]) { //all 4's in this code are because we're working with a fixed size of 4.
+static void printMatrix_4by4(int matrix[][4]) { //all 4's in this code are because we're working with a fixed size of 4.
     int i, j;
 	for (i = 0; i < 4; i++) {        //also, this is a stub
         for (j = 0; j < 4; j++) {
@@ -51,7 +64,7 @@ void printMatrix_4by4(int matrix[][4]) { //all 4's in this code are because we'r
     printf("\n");
 }
 
-void printBoard(){ //this is a stub
+static void printBoard(){ //this is a stub
 	int i, j;
     for(i = 0; i < BOARD_HEIGHT; i++) {
         for(j = 0; j < BOARD_WIDTH; j++) {
@@ -105,25 +118,17 @@ void initBoard() {
     nextPiece();	//selects the first piece to play. it's placed in the matrix "board".
 }
 
-void nextPiece() {
-	x_coord = (int)BOARD_WIDTH/2 - 2;
-	y_coord = 0;
+static void nextPiece() {
+	x_coord = (int)BOARD_WIDTH/2 - 2;	//places the piece centered in the board,
+	y_coord = 0;						//in the top.
 
 	PieceID = nextPieceID;		//the next piece is placed in board.
+	nextPieceID = rand() % PIECES_TETRIS;	 //generates a random number between 0 and 1 less than the defined pieces
 
-    if(mod) { //TODO volar esto. pd lety dejá las drogas || mod is a variable used only for testing purposes, kinda like a cheat code. don't tell anyone!
-        nextPieceID = 6;
-    }
-    else {
-        nextPieceID = rand() % PIECES_TETRIS;	 //generates a random number between 0 and 1 less than the defined pieces
-    }
-    addPiece();
-
-    mod = 0;	//TODO sacar esto
-    //printf("Score: %d\n", score);
+	addPiece();
 }
 
-void addPiece() {
+static void addPiece() {
 	int i, j, aux;
 	aux = PIECE_SIZE(PieceID);	//selects size of piece
 
@@ -142,7 +147,7 @@ void addPiece() {
 
 				if(board[i][j + x_coord] > 1) { //if the board has a static piece where the game is trying to put a new piece, 
 					alive = false;				//it ends the game.
-					gameOver();	//TODO sacar esto
+					gameOver();
 					return;
 				}
 				else {
@@ -175,7 +180,7 @@ void addPiece() {
 
 //this function handles all the logic needed before every cycle starts with a new piece. 
 //it's called when, you guessed it, a piece collides with something.
-void collision() {
+static void collision() {
 
 	int i, j, k;
 
@@ -240,17 +245,17 @@ void collision() {
 
     tetromino[PieceID]++;
 	//score++;
-	nextPiece(mod);
+	nextPiece();
 }
 
 
-void gameOver() {
+static void gameOver() {
     printf("Womp womp\nYour score was %d\n", score);
     printf("level reached: %d\n", lines);
     
 }
 
-void leaderBoard(char inputName[6], unsigned long int inputScore, unsigned int inputLevel, int firstGame) {
+static void leaderBoard(char inputName[6], unsigned long int inputScore, unsigned int inputLevel, int firstGame) {
     if(firstGame) {
         struct player {
         char name[6];
@@ -394,7 +399,6 @@ int shiftPieceDown(int keyPressed) {	//Returns 1 if there's collision, 0 if not.
     if(keyPressed) {
         score++;
     }
-    printf("Got here!\n");
     return 0;
 }
 

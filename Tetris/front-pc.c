@@ -56,22 +56,11 @@ static int switchPieceID(int ID);
 static void pauseDraw(int index);
 static void gameoverDraw(char key, int index, bool flag);
 
-/*
-typedef struct {
-	char matrix[16][10];	// Posición de las piezas.
-	char next;		// Siguiente pieza.
-	char level;		// Nivel de avance en el juego, cambia el color de las piezas.
-	int score; 	//Puntaje acumulado por nivel y líneas completadas.
-} info_t; */
-
-
-
 #define TITLE_FILE 		"Assets/title.png"
 #define BACKGROUND_FILE "Assets/background.png"
 #define BLOCKS_FILE 	"Assets/blocks.png"
 #define GAMEOVER_FILE	"Assets/game_over.png"
 
-extern int board[BOARD_HEIGHT][BOARD_WIDTH];
 
 int main() {
 	srand(time(NULL));	//Semilla para función rand().
@@ -328,16 +317,11 @@ static void TetrisPlay() {
 						al_play_sample(argument.sfx4, 1.0, 0.0, 1.0, ALLEGRO_PLAYMODE_ONCE, NULL);
 						argument.redraw = true;
 						shiftPieceRight();	// Desplaza la pieza a la derecha en la matriz "board".
-						mod = 0;
 					}
 					else if(al_key_down(&(argument.ks), ALLEGRO_KEY_SPACE)) {
 						al_play_sample(argument.sfx6, 1.0, 0.0, 1.0, ALLEGRO_PLAYMODE_ONCE, NULL);
 						argument.redraw = true;
 						rotateClockwise();
-					}
-					else if(al_key_down(&(argument.ks), ALLEGRO_KEY_UP)) {
-						argument.redraw = true;
-						mod = 1;	//TODO eliminar esto testing
 					}
 				}
 				break;
