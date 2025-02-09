@@ -13,7 +13,7 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <unistd.h>
-#include <string.h>//para el strlen para saber cuantos caracteres tiene sin el '/0'
+#include <string.h>
 #include <stdbool.h>
 #include "Libs/disdrv.h"
 #include "Libs/joydrv.h"
@@ -28,7 +28,7 @@
 #define MAX_TOP 5
 #define HEIGHTNUM 7
 #define WIDTHNUM 5
-#define EASTER_EGG 999
+#define EASTER_EGG 999//si se elige como tag los controles se invierten
 
 
 enum {PLAY=1,TOP,STOP,CONT};
@@ -48,10 +48,6 @@ static void top (void);
 static void print_tetris (void);
 static void nextpiece_draw (void);
 
-extern int level,score,lines;
-extern int board[BOARD_HEIGHT][BOARD_WIDTH],nextPieceStatus [4][4];
-extern bool alive;
-
 
 int main (void)
 {
@@ -59,7 +55,7 @@ int main (void)
 	disp_init();
 	joy_init();
 	print_tetris();
-	while((state=menu())!=STOP)
+	while((state=menu())!=STOP)//vuelve al menu constantemente hasat seleccionar STOP
 	{
 		switch(state)
 		{
@@ -75,24 +71,24 @@ int main (void)
 	return 0;
 }
 
-static void print_tetris (void)
+static void print_tetris (void)//Imprime TETRIS al iniciar el programa con texto deslizante
 {
 	char text[]="TETRIS",i,j;
 	dcoord_t coord={15,9};
-	for(i=0;i<(strlen(text)*4+16);i++)
+	for(i=0;i<(strlen(text)*4+MAX_WIDTH);i++)//Hace hasat que la ultima letra llegue al inicio de la pantalla
 	{
 		for(j=0;j<strlen(text);j++)
 		{
 			letras_on(coord,text[j]);
 			(coord.x)+=4;
 		}
-		(coord.x)-=4*strlen(text);
+		(coord.x)-=4*strlen(text);//vuelve al inicio para apagar todas las letras
 		for(j=0;j<strlen(text);j++)
 		{
 			letras_off(coord,text[j]);
 			(coord.x)+=4;
 		}
-		(coord.x)-=4*strlen(text)+1;
+		(coord.x)-=4*strlen(text)+1;// va 1 antes que el inicio para ir deslizando el texto
 	}
 }
 
@@ -104,7 +100,7 @@ static char menu (void)
 	disp_update();
 	dcoord_t coords={1,4};
 	joyinfo_t info;
-	for(i=0;i<strlen(text);i++)
+	for(i=0;i<strlen(text);i++)//imprime las palabras PLAY TOP STOP
 	{
 		if(text[i]!=' ')
 		{
@@ -117,14 +113,14 @@ static char menu (void)
 			if(j++)
 				(coords.y)+=5;
 			else
-				(coords.y)+=6;
+				(coords.y)+=6;//en el primer caso deja un lugar de mas
 		}
 	}
 	coords.x=0;
 	do
 	{
 		info = joy_read();
-		switch(state)
+		switch(state)//segun el estado es donde ubica el led parpadeante
 		{
 		case PLAY:
 			coords.y=2;
@@ -142,7 +138,7 @@ static char menu (void)
 		disp_write(coords,D_OFF);
 		disp_update();
 		usleep((SEC/10)*2);
-		if(state!=PLAY && info.y>50)
+		if(state!=PLAY && info.y>50)//con la info de joystick cambia el estado
 		{
 		  state--;
 		}
@@ -167,21 +163,21 @@ static void top (void)
 		printf("Error al abrir archivo\n");
 		fclose(ftag);
 	}
-	while (i < MAX_TOP && fscanf(ftag, "%d", &users[i]) == 1)
+	while (i < MAX_TOP && fscanf(ftag, "%d", &users[i]) == 1)//guarda en el arreglo los tags, uno por cada elemento
 	{
 		i++;
 	}
 	fclose(ftag);
 	for(i=0;i<MAX_TOP;i++)
 	{
-		sprintf(topusers[i],"%d",users[i]);
+		sprintf(topusers[i],"%d",users[i]);//pone cada caracter en la matriz topuser
 	}
-	for(k=0;k<((HEIGHTNUM+1)*MAX_TOP+MAX_HEIGHT);k++)
+	for(k=0;k<((HEIGHTNUM+1)*MAX_TOP+MAX_HEIGHT);k++)//imprime deslizante hacia arriba hasta que llegue al ultimo tag
 	{
 		for(i=0;i<MAX_TOP;i++)
 		{
 			(coord.x)=0;
-			for(j=0,f=0;j<strlen(topusers[i]);j++)
+			for(j=0,f=0;j<strlen(topusers[i]);j++)//imprime en horizontal hasta llegar al final del tag
 			{
 				letras_on(coord,topusers[i][j]);
 				if(f++)
@@ -192,28 +188,15 @@ static void top (void)
 			}
 			(coord.y)+=(HEIGHTNUM+1);
 		}
-		(coord.y)-=(HEIGHTNUM+1)*MAX_TOP;
+		(coord.y)-=(HEIGHTNUM+1)*MAX_TOP+1;//va un lugar arriba del inicio
 		usleep(SEC/20);
-		for(i=0;i<MAX_TOP;i++)
-		{
-			(coord.x)=0;
-			for(j=0,f=0;j<strlen(topusers[i]);j++)
-			{
-				letras_off(coord,topusers[i][j]);
-				if(f++)
-					(coord.x)+=WIDTHNUM;
-				else
-					(coord.x)+=WIDTHNUM+1;
-			}
-			(coord.y)+=(HEIGHTNUM+1);
-		}
-		(coord.y)-=(HEIGHTNUM+1)*MAX_TOP+1;
+		disp_clean();//para limpiar la pantalla
 	}
 }
 
 
 
-static int tag (void)
+static int tag (void)//funcion para elegir el tag y devuelve su valor
 {
 	dcoord_t coords={1,6};
 	joyinfo_t info;
@@ -226,63 +209,64 @@ static int tag (void)
 	letras_on(coords,'G');
 	(coords.x)=0;
 	(coords.y)=14;
-	for(i=0;i<3;i++)
+	for(i=0;i<3;i++)//imprime los tres numeros para elegir
 	{
-	do
-	{
+		do//cambia el numero que aparece hasta elegir uno
+		{
+			letras_on(coords,'0'+num);
+			usleep((SEC/10)*4);
+			letras_off(coords,'0'+num);
+			info=joy_read();
+			if(num!=0 && info.x <-50)
+			{
+				num--;
+			}
+			else if(num!=9 && info.x>50)
+			{
+				num++;
+			}
+		}while(info.sw==J_NOPRESS);
 		letras_on(coords,'0'+num);
-		usleep((SEC/10)*4);
-		letras_off(coords,'0'+num);
-		info=joy_read();
-		if(num!=0 && info.x <-50)
+		user= user*10 + num;//va guardando el numero en num
+		(coords.x)+=5;
+		if(i==1)
 		{
-			num--;
-		}else if(num!=9 && info.x>50)
-		{
-			num++;
+			(coords.x)++;
 		}
-	}while(info.sw==J_NOPRESS);
-	letras_on(coords,'0'+num);
-	user= user*10 + num;
-	(coords.x)+=5;
-	if(i==2)
-	{
-		(coords.x)++;
-	}
 	}
 	return user;
 
 }
 
-static void play (void)
+static void play (void)//funcion que se encarga de todo el juego
 {
 	int aux, i=0;
 	char flag=CONT,top;
 	int user;
-	char nums[20]={0};
+	char nums[20]={0};//arreglo para imprimir el score
 	joyinfo_t info;
-	clock_t last_fall_time = clock(),last_number_time = clock();
+	clock_t last_fall_time = clock(),last_number_time = clock();// relojes para la caida de la pieza y la impresion del score
 	alive=true;
 	user=tag();
 	printf("%d",user);
 	score=0;
 	lines=0;
 	level=0;//reinicia todas las variables a 0
-	initBoard();
-	while(flag!=STOP)
+	initBoard();//inicia la matriz
+	while(flag!=STOP)//sale cuando termina el juego o se desea parar
 	{
 		print_level (level);
 		playini();
-		aux=level;
+		aux=level;//para saber cuando pasa de nivel e imprimirlo en pantalla
 		while(level==aux && flag != STOP)
 		{
 			printBoard();
 			board_redraw();
 			nextpiece_draw();
-			clock_t current_time = clock();
+			clock_t current_time = clock();//va guardando el tiempo actual del procesador
 			double elapsed1_time = (double)(current_time - last_fall_time) / CLOCKS_PER_SEC*100,elapsed2_time = (double)(current_time - last_number_time) / CLOCKS_PER_SEC*100;
 			//guarda en cada caso el tiempo que paso desde que se relizo la accion
-			if(elapsed1_time >= FALL_TIME*(10.0/(10.0+level)))
+			if(elapsed1_time >= FALL_TIME*(10.0/(10.0+level)))//va cambiando el teimpo de caida de la pieza segun el nivel
 			{
 				shiftPieceDown(0);
 				last_fall_time = clock(); //reinicia el temporizador
@@ -297,17 +281,17 @@ static void play (void)
 					sprintf(nums,"%d",score);//funcion que guarda cada dijito del int en un arreglo de chars
 					i=0;
 				}
-				letras_on(coord,nums[i++]);
+				letras_on(coord,nums[i++]);//va imprimiendo los numeros del score
 				disp_update();
-				last_number_time = clock();
+				last_number_time = clock();//reinicia el temporizador
 			}
 			else if(alive==false)
 			{
-				gameover(&flag);
+				gameover(&flag);//entra cuando se pierde
 			}
 			else
 			{
-				info=joy_read();
+				info=joy_read();//si no hace otra accion lee el joystick
 				if((info.y)<-50)
 				{
 					if(user==EASTER_EGG)
@@ -360,7 +344,7 @@ static void play (void)
 			usleep(SEC/8);//pausa para no tomar demasiados valores
 		}
 	}
-	top=make_top(user);
+	top=make_top(user);//guarda la posicion del top o 0 si no entra en el 5
 	if(top)
 	{
 		print_top(top);
@@ -371,7 +355,7 @@ static void gameover (char * flag)
 {
 	int i,j;
 	dcoord_t coord={15,9};
-	*flag=STOP;
+	*flag=STOP;//pone en flag STOP para parar el juego
 	disp_clear();
 	disp_update();
 	for(i=0;i<48;i++)
@@ -391,28 +375,13 @@ static void gameover (char * flag)
 		letras_on(coord,'E');
 		(coord.x)+=4;
 		letras_on(coord,'R');
+		disp_clear();
 
-		(coord.x)-=33;
-		letras_off(coord,'G');
-		(coord.x)+=5;
-		letras_off(coord,'A');
-		(coord.x)+=4;
-		letras_off(coord,'M');
-		(coord.x)+=4;
-		letras_off(coord,'E');
-		(coord.x)+=7;
-		letras_off(coord,'O');
-		(coord.x)+=4;
-		letras_off(coord,'V');
-		(coord.x)+=5;
-		letras_off(coord,'E');
-		(coord.x)+=4;
-		letras_off(coord,'R');
 		(coord.x)-=34;
 	}
 	(coord.x)=1;
 	(coord.y)=1;
-	for(j=0;j<2;j++)
+	for(j=0;j<2;j++)//imprime cara con x
 	{
 		for(i=0;i<5;i++)
 		{
@@ -464,13 +433,12 @@ static void gameover (char * flag)
 	disp_clear();
 }
 
-static void print_top(char top)
+static void print_top(char top)//si entra al top se dice en que posicion
 {
 	char i,j,length = 0;
 	int num = score;
 	disp_update();
-	char nums[20];
-	memset(nums,END,19);
+	char nums[20]={0};
 	sprintf(nums,"%d",score);
 	dcoord_t coord={2,5};
 	letras_on(coord,'T');
@@ -481,7 +449,7 @@ static void print_top(char top)
 	(coord.x)=6;
 	(coord.y)=14;
 	letras_on(coord,'0'+top);
-	usleep(SEC*3); length = 0;
+	usleep(SEC*3);
 	while (num > 0)
 	{
 		num /= 10;
@@ -493,23 +461,18 @@ static void print_top(char top)
 	(coord.y)=10;
 	for(i=0;i<(length*6+MAX_WIDTH);i++)
 	{
-		for(j=0;nums[j]!=END;j++)
+		for(j=0;j<strlen(nums);j++)
 		{
 			letras_on(coord,nums[j]);
 			(coord.x)+=6;
 		}
-		(coord.x)-=(j*6);
 		usleep(SEC/15);
-		for(j=0;nums[j]!=END;j++)
-		{
-			letras_off(coord,nums[j]);
-			(coord.x)+=6;
-		}
+		disp_clear();
 		(coord.x)-=(j*6)+1;
 	}
 }
 
-static void pausa (char * flag)
+static void pausa (char * flag)//
 {
 	char state=PLAY;
 	disp_clear();
@@ -534,7 +497,7 @@ static void pausa (char * flag)
 	letras_on (coords,'P');
 	coords.x=0;
 	usleep(SEC);//tiempo de espera para que no tome el presionado para poner pausa
-	do
+	do//mismo que en el menu
 	{
 		info = joy_read();
 		switch(state)
@@ -561,7 +524,7 @@ static void pausa (char * flag)
 		  state+=2;
 		}
 	}while(info.sw == J_NOPRESS);
-	disp_clear();
+	disp_clear();//deoende que se eligio que pone el flag
 	if(state==PLAY)
 	{
 		*flag = CONT;
@@ -575,13 +538,13 @@ static void pausa (char * flag)
 }
 
 
-static void board_redraw (void)
+static void board_redraw (void)//para imprimir como este la matriz board
 {
 	int i, j;
 	dcoord_t coord;
 	for(i=0;i<BOARD_HEIGHT;i++)
 	{
-		for(j=0;j<BOARD_WIDTH;j++)
+		for(j=0;j<BOARD_WIDTH;j++)//recorre toda la matriz y chequea si esta en 1 o 0
 		{
 			coord.y=i;
 			coord.x=j;
@@ -623,7 +586,6 @@ static void print_level (int lv)
 		{
 			letras_on(coord,'0'+lv);
 			usleep(SEC/100);
-			(coord.x)-=21;
 		}
 		else
 		{
@@ -631,36 +593,20 @@ static void print_level (int lv)
 			(coord.x)+=6;
 			letras_on(coord,'0'+lv%10);
 			usleep(SEC/100);
-			(coord.x)-=27;
 		}
-		(coord.y)=9;
-		letras_off(coord,'L');
-		(coord.x)+=4;
-		letras_off(coord,'E');
-		(coord.x)+=4;
-		letras_off(coord,'V');
-		(coord.x)+=5;
-		letras_off(coord,'E');
-		(coord.x)+=4;
-		letras_off(coord,'L');
-		(coord.x)+=4;
-		(coord.y)=10;
-		if(lv<10)
+		disp_clear();
+		if(lv<10)//depende los digitos cuantos lugares vuelve hacia atras
 		{
-			letras_off(coord,'0'+lv);
 			(coord.x)-=22;
 		}
 		else
 		{
-			letras_off(coord,'0'+lv/10);
-			(coord.x)+=6;
-			letras_off(coord,'0'+lv%10);
 			(coord.x)-=28;
 		}
 	}
 }
 
-static void playini(void)
+static void playini(void)//funcion que imprime el fin del tablero
 {
 	dcoord_t coord;
 	(coord.x)=14;
@@ -682,10 +628,8 @@ static char make_top(int user)
     char top = 0;
     int scr[MAX_TOP] = {0}, users[MAX_TOP] = {0};
     int i = 0, j = MAX_TOP, k = 0;
-
     FILE *fscore = fopen("Top/score.txt", "r");
     FILE *ftag = fopen("Top/tag.txt", "r");
-
     if (!fscore || !ftag)
     {
         printf("Error al abrir archivos\n");
@@ -693,24 +637,18 @@ static char make_top(int user)
         if (ftag) fclose(ftag);
         return 0;
     }
-
-    // Leer puntajes del archivo
-    while (i < MAX_TOP && fscanf(fscore, "%d", &scr[i]) == 1)
+    while (i < MAX_TOP && fscanf(fscore, "%d", &scr[i]) == 1)    //lee puntajes del archivo
     {
         i++;
     }
     fclose(fscore);
-
-    // Leer usuarios del archivo
     i = 0;
-    while (i < MAX_TOP && fscanf(ftag, "%d", &users[i]) == 1)
+    while (i < MAX_TOP && fscanf(ftag, "%d", &users[i]) == 1)    // lee usuarios del archivo
     {
         i++;
     }
     fclose(ftag);
-
-    // Determinar si el nuevo puntaje entra en el ranking
-    for (i = 0; i < MAX_TOP; i++)
+    for (i = 0; i < MAX_TOP; i++) // determina si el nuevo puntaje entra en el ranking
     {
         if (scr[i] < score)
         {
@@ -720,11 +658,9 @@ static char make_top(int user)
             break;
         }
     }
-
-    if (top || i < MAX_TOP)
+    if (top || i < MAX_TOP)//si entra en el top o si no hay 5 valores todavia
     {
-        // Insertar el nuevo puntaje y usuario en el ranking
-        for (j = MAX_TOP - 1; j > k; j--)
+        for (j = MAX_TOP - 1; j > k; j--)//pone el nuevo puntaje y usuario en el ranking
         {
             scr[j] = scr[j - 1];
             users[j] = users[j - 1];
@@ -732,11 +668,9 @@ static char make_top(int user)
         scr[k] = score;
         users[k] = user;
     }
-
-    // Guardar los nuevos valores en los archivos
+    // guarda los nuevos valores en los archivos
     fscore = fopen("Top/score.txt", "w");
     ftag = fopen("Top/tag.txt", "w");
-
     if (!fscore || !ftag)
     {
         printf("Error al abrir archivos para escritura\n");
@@ -749,8 +683,6 @@ static char make_top(int user)
     {
         fprintf(fscore, "%d\n", scr[i]);
         fprintf(ftag, "%d\n", users[i]);
-        fflush(ftag);
-        fflush(fscore);
     }
 
     fclose(fscore);
@@ -765,7 +697,7 @@ static void nextpiece_draw(void)
     int i, j, f = 0;
     static int k = 0; // arranca en 0
     static int aux[4][4]; //es estático y se mantiene entre llamadas
-    if (k++ == 0) // Inicializar aux solo la primera vez
+    if (k++ == 0) // inicializa aux solo la primera vez
     {
         for (i = 0; i < 4; i++)
         {
@@ -779,28 +711,28 @@ static void nextpiece_draw(void)
     {
         for (j = 0; j < 4; j++)
         {
-            if (aux[i][j] != nextPieceStatus[i][j])
+            if (aux[i][j] != nextPieceStatus[i][j])//si cambia la siguiente pieza incrementa f
             {
                 f++;
             }
         }
     }
-    if (f > 0) // Solo limpiar si hay cambios
+    if (f > 0) // solo limpiar si hay cambios
     {
         for (i = 0; i < 4; i++)
         {
             for (j = 0; j < 4; j++)
             {
-                if (aux[i][j]) // Solo apagar si antes estaba encendido
+                if (aux[i][j]) //apaga los leds prendidos
                 {
                     dcoord_t coord = {12 + (uint8_t)j, 10 + (uint8_t)i};
                     disp_write(coord, D_OFF);
                 }
-                aux[i][j] = nextPieceStatus[i][j]; // Actualizar aux con los nuevos valores
+                aux[i][j] = nextPieceStatus[i][j]; // actualiza aux con los nuevos valores
             }
         }
     }
-    for (i = 0; i < 4; i++)
+    for (i = 0; i < 4; i++)//prende los leds de la proxima pieza
     {
         for (j = 0; j < 4; j++)
         {
