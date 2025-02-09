@@ -19,7 +19,7 @@ SRC_RASP := backend.c letras.c
 
 #Archivos objeto de pc y raspberry
 OBJS_PC := backend_pc.o
-OBJS_RASP := backend_rasp.o letras.o
+OBJS_RASP := backend_rasp.o letras.o Libs/disdrv.o Libs/joydrv.o
 
 #Headers para pc y raspberry
 HEAD_PC := backend.h
@@ -27,7 +27,7 @@ HEAD_RASP := backend.h letras.h
 
 #Librerías de Allegro y Raspberry
 LIB_ALLEGRO := -lallegro -lallegro_image -lallegro_font -lallegro_ttf -lallegro_audio -lallegro_acodec
-LIB_RASP := -ldisdrv -ljoydrv 
+LIB_RASP := 
 
 #Regla principal
 all: pc raspberry
