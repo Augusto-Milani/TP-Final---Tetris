@@ -15,6 +15,7 @@
 #include <unistd.h>
 #include <string.h>
 #include <stdbool.h>
+#include <time.h>
 #include "Libs/disdrv.h"
 #include "Libs/joydrv.h"
 #include "letras.h"
@@ -73,17 +74,18 @@ int main (void)
 
 static void print_tetris (void)//Imprime TETRIS al iniciar el programa con texto deslizante
 {
-	char text[]="TETRIS",i,j;
+	char text[]="TETRIS";
+	int i,j;
 	dcoord_t coord={15,9};
-	for(i=0;i<(strlen(text)*4+MAX_WIDTH);i++)//Hace hasat que la ultima letra llegue al inicio de la pantalla
+	for(i=0;i<((int)strlen(text)*4+MAX_WIDTH);i++)//Hace hasat que la ultima letra llegue al inicio de la pantalla
 	{
-		for(j=0;j<strlen(text);j++)
+		for(j=0;j<(int)strlen(text);j++)
 		{
-			letras_on(coord,text[j]);
+			letras_on(coord, text[j]);
 			(coord.x)+=4;
 		}
 		(coord.x)-=4*strlen(text);//vuelve al inicio para apagar todas las letras
-		for(j=0;j<strlen(text);j++)
+		for(j=0;j<(int)strlen(text);j++)
 		{
 			letras_off(coord,text[j]);
 			(coord.x)+=4;
@@ -94,13 +96,14 @@ static void print_tetris (void)//Imprime TETRIS al iniciar el programa con texto
 
 static char menu (void)
 {
-    char state=PLAY,i,j=0;
+    char state=PLAY,j=0;
+    int i;
     char text[]="PLAY TOP STOP";
 	disp_clear();
 	disp_update();
 	dcoord_t coords={1,4};
 	joyinfo_t info;
-	for(i=0;i<strlen(text);i++)//imprime las palabras PLAY TOP STOP
+	for(i=0;i<(int)strlen(text);i++)//imprime las palabras PLAY TOP STOP
 	{
 		if(text[i]!=' ')
 		{
@@ -177,7 +180,7 @@ static void top (void)
 		for(i=0;i<MAX_TOP;i++)
 		{
 			(coord.x)=0;
-			for(j=0,f=0;j<strlen(topusers[i]);j++)//imprime en horizontal hasta llegar al final del tag
+			for(j=0,f=0;j<(int)strlen(topusers[i]);j++)//imprime en horizontal hasta llegar al final del tag
 			{
 				letras_on(coord,topusers[i][j]);
 				if(f++)
@@ -190,7 +193,7 @@ static void top (void)
 		}
 		(coord.y)-=(HEIGHTNUM+1)*MAX_TOP+1;//va un lugar arriba del inicio
 		usleep(SEC/20);
-		disp_clean();//para limpiar la pantalla
+		disp_clear();//para limpiar la pantalla
 	}
 }
 
@@ -249,9 +252,6 @@ static void play (void)//funcion que se encarga de todo el juego
 	alive=true;
 	user=tag();
 	printf("%d",user);
-	score=0;
-	lines=0;
-	level=0;//reinicia todas las variables a 0
 	initBoard();//inicia la matriz
 	while(flag!=STOP)//sale cuando termina el juego o se desea parar
 	{
@@ -260,7 +260,6 @@ static void play (void)//funcion que se encarga de todo el juego
 		aux=level;//para saber cuando pasa de nivel e imprimirlo en pantalla
 		while(level==aux && flag != STOP)
 		{
-			printBoard();
 			board_redraw();
 			nextpiece_draw();
 			clock_t current_time = clock();//va guardando el tiempo actual del procesador
@@ -276,7 +275,7 @@ static void play (void)//funcion que se encarga de todo el juego
 				dcoord_t coord={11,7};
 				if(i!=0)
 				letras_off(coord,nums[i-1]);
-				if(i==strlen(nums)+1)//chequea si ya esta en uno mas que el ultimo para hacer un corte entre el primer score y el siguiente
+				if(i==(int)strlen(nums)+1)//chequea si ya esta en uno mas que el ultimo para hacer un corte entre el primer score y el siguiente
 				{
 					sprintf(nums,"%d",score);//funcion que guarda cada dijito del int en un arreglo de chars
 					i=0;
@@ -435,8 +434,7 @@ static void gameover (char * flag)
 
 static void print_top(char top)//si entra al top se dice en que posicion
 {
-	char i,j,length = 0;
-	int num = score;
+	int i,j,length = 0, num = score;
 	disp_update();
 	char nums[20]={0};
 	sprintf(nums,"%d",score);
@@ -461,7 +459,7 @@ static void print_top(char top)//si entra al top se dice en que posicion
 	(coord.y)=10;
 	for(i=0;i<(length*6+MAX_WIDTH);i++)
 	{
-		for(j=0;j<strlen(nums);j++)
+		for(j=0;j<(int)strlen(nums);j++)
 		{
 			letras_on(coord,nums[j]);
 			(coord.x)+=6;
@@ -585,14 +583,14 @@ static void print_level (int lv)
 		if(lv<10)
 		{
 			letras_on(coord,'0'+lv);
-			usleep(SEC/100);
+			usleep(SEC/50);
 		}
 		else
 		{
 			letras_on(coord,'0'+lv/10);
 			(coord.x)+=6;
 			letras_on(coord,'0'+lv%10);
-			usleep(SEC/100);
+			usleep(SEC/50);
 		}
 		disp_clear();
 		if(lv<10)//depende los digitos cuantos lugares vuelve hacia atras
