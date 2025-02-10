@@ -10,13 +10,9 @@
 
 
 
-#include <stdio.h>
-#include <stdint.h>
 #include <unistd.h>
 #include <string.h>
-#include <stdbool.h>
 #include <time.h>
-#include "Libs/disdrv.h"
 #include "Libs/joydrv.h"
 #include "letras.h"
 #include "backend.h"
@@ -29,7 +25,7 @@
 #define MAX_TOP 5
 #define HEIGHTNUM 7
 #define WIDTHNUM 5
-#define EASTER_EGG 999//si se elige como tag los controles se invierten
+#define EASTER_EGG 444//si se elige como tag los controles se invierten
 
 
 enum {PLAY=1,TOP,STOP,CONT};
@@ -56,6 +52,7 @@ int main (void)
 	disp_init();
 	joy_init();
 	print_tetris();
+	srand(time(NULL));	//semilla para función rand().
 	while((state=menu())!=STOP)//vuelve al menu constantemente hasat seleccionar STOP
 	{
 		switch(state)
@@ -267,7 +264,7 @@ static void play (void)//funcion que se encarga de todo el juego
 			//guarda en cada caso el tiempo que paso desde que se relizo la accion
 			if(elapsed1_time >= FALL_TIME*(10.0/(10.0+level)))//va cambiando el teimpo de caida de la pieza segun el nivel
 			{
-				shiftPieceDown(0);
+				shiftPieceDown(false);
 				last_fall_time = clock(); //reinicia el temporizador
 			}
 			else if(elapsed2_time >= SCORE_TIME)
@@ -299,7 +296,7 @@ static void play (void)//funcion que se encarga de todo el juego
 					}
 					else
 					{
-						shiftPieceDown(1);
+						shiftPieceDown(true);
 					}
 				}
 				else if((info.x)<-50)
@@ -328,7 +325,7 @@ static void play (void)//funcion que se encarga de todo el juego
 				{
 					if(user==EASTER_EGG)
 					{
-						shiftPieceDown(1);
+						shiftPieceDown(true);
 					}
 					else
 					{
