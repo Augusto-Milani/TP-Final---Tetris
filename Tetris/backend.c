@@ -12,8 +12,8 @@
 #define PIECE_SIZE(x) ((x)!=6	?	((x)!=3 ? 3 : 2)	:	4)	// if x is an I, it's 4x4, if it's an O, its 2x2. Otherwise, it's 3x3
 
 //Global variables
-int board[BOARD_HEIGHT][BOARD_WIDTH], nextPieceStatus[4][4];
-int PieceID, nextPieceID, score, lines, level, tetromino[PIECES_TETRIS];
+unsigned int board[BOARD_HEIGHT][BOARD_WIDTH], nextPieceStatus[4][4];
+unsigned int PieceID, nextPieceID, score, lines, level, tetromino[PIECES_TETRIS];
 bool alive;
 
 //Local functions
@@ -154,7 +154,7 @@ static void collision() {
 
     //Lane clearing logic
 
-    int currentLines, blocksPerRow;
+    unsigned int currentLines, blocksPerRow;
     for(i = BOARD_HEIGHT - 1, currentLines = 0; i >= 0; i--) {
         for(j = 0, blocksPerRow = 0; j < BOARD_WIDTH; j++) { //check all the board for complete rows. Not the most efficient, but the safest.
             
@@ -196,13 +196,24 @@ static void collision() {
         default:
             break;
     }
-	
-    lines += currentLines;
-    level = (lines / 10);
-	
+	if(score > 999999) {
+		score = 999999;
+	}
 
-    tetromino[PieceID]++;
-	//score++;
+	lines += currentLines;
+	if(lines > 999) {
+		lines = 999;
+	}
+	
+    level = (lines / 10);
+    if(level > 99) {
+    	level = 99;
+    }
+
+    if(tetromino[PieceID] <= 999) {
+    	tetromino[PieceID]++;
+    }
+
 	nextPiece();
 }
 
@@ -295,7 +306,7 @@ void rotateClockwise() {
 }
 
 
-int shiftPieceDown(int keyPressed) {	//Returns 1 if there's collision, 0 if not. (to display sound)
+bool shiftPieceDown(const bool keyPressed) {	//Returns 1 if there's collision, 0 if not. (to display sound)
 	int i, j, aux;
 	aux = PIECE_SIZE(PieceID);
 
@@ -311,7 +322,7 @@ int shiftPieceDown(int keyPressed) {	//Returns 1 if there's collision, 0 if not.
                 if (i >= BOARD_HEIGHT - 1 || board[i + 1][j] > 1) {
                     //printf("piece collided, pieceID was %d, i,j coords were (%d, %d)\n", PieceID, i, j);
                     collision();
-                    return 1;
+                    return true;
                 }
             }
         }
@@ -338,10 +349,10 @@ int shiftPieceDown(int keyPressed) {	//Returns 1 if there's collision, 0 if not.
 
     y_coord++;
 
-    if(keyPressed) {
+    if(keyPressed && score <= 999999) {
         score++;
     }
-    return 0;
+    return false;
 }
 
 void shiftPieceRight() {

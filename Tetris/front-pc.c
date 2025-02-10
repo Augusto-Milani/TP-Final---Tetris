@@ -12,48 +12,49 @@
 #include <allegro5/allegro_audio.h>
 #include <allegro5/allegro_acodec.h>
 
-typedef struct {	// Facilito usar allegro sin pasar muchos argumentos entre funciones.
-		ALLEGRO_EVENT event;			// Evento que ocurrió (ver switch).
-		ALLEGRO_KEYBOARD_STATE ks;		// Registro del teclado.
-		ALLEGRO_EVENT_QUEUE *queue;		// Registro de eventos.
-		ALLEGRO_TIMER *timer;
-		ALLEGRO_FONT *font;
-		ALLEGRO_BITMAP *title;
-		ALLEGRO_BITMAP *background;
-		ALLEGRO_BITMAP *blocks;
-		ALLEGRO_BITMAP *gameover;
-		ALLEGRO_SAMPLE* sfx4;
-		ALLEGRO_SAMPLE* sfx6;
-		ALLEGRO_SAMPLE* sfx8;
-		ALLEGRO_SAMPLE* music1;
-		ALLEGRO_SAMPLE_INSTANCE *sample_instance;
-		bool flagMenu;						// Bandera para menú principal y pausa.
-		bool flagPlay;						// Bandera para terminar programa.
-		bool redraw;					// Bandera para dibujar.
-	} argument_t;
+struct {	// Facilito usar allegro sin pasar muchos argumentos entre funciones.
+	ALLEGRO_EVENT event;			// Evento que ocurrió (ver switch).
+	ALLEGRO_KEYBOARD_STATE ks;		// Registro del teclado.
+	ALLEGRO_EVENT_QUEUE *queue;		// Registro de eventos.
+	ALLEGRO_TIMER *timer;
+	ALLEGRO_FONT *font;
+	ALLEGRO_BITMAP *title;
+	ALLEGRO_BITMAP *background;
+	ALLEGRO_BITMAP *blocks;
+	ALLEGRO_BITMAP *gameover;
+	ALLEGRO_SAMPLE* sfx4;
+	ALLEGRO_SAMPLE* sfx6;
+	ALLEGRO_SAMPLE* sfx8;
+	ALLEGRO_SAMPLE* music1;
+	ALLEGRO_SAMPLE_INSTANCE *sample_instance;
+	bool flagMenu;						// Bandera para menú principal y pausa.
+	bool flagPlay;						// Bandera para terminar programa.
+	bool redraw;					// Bandera para dibujar.
+} argument;
 
 
-static int top;
-static int TITLE_WIDTH, TITLE_HEIGHT, BACK_WIDTH, BACK_HEIGHT,
-			TILE_WIDTH, TILE_HEIGHT, GAMEOVER_WIDTH, GAMEOVER_HEIGHT;
-static int dx, dy;	//Centrar imagen en pantalla.
+static unsigned int top;
+static unsigned int TITLE_WIDTH, TITLE_HEIGHT, BACK_WIDTH, BACK_HEIGHT,
+					TILE_WIDTH, TILE_HEIGHT, GAMEOVER_WIDTH, GAMEOVER_HEIGHT;
+static unsigned int dx, dy;	//Centrar imagen en pantalla.
 static float scale, move_x, move_y;
-static argument_t argument;
 
+#define HARD_MODE 15
 #define IS_LETTER(x) ( ('a'<=(x)&&(x)<='z') || ('A'<=(x)&&(x)<='Z') )
 
 static void check_init(void *pointer, const char *name);
 static void must_init (bool test, const char *description);
 
 static void TetrisMenu();
-static void TetrisPlay();
+static void TetrisPlay(const bool hardMode);
 static void TetrisPause();
 static void TetrisGameOver();
 
 static void menuDraw();
 static void playDraw(bool tileColor);
-static int switchPieceID(int ID);
-static void pauseDraw(int index);
+static void newTimer(const unsigned int extraVelocity);
+static unsigned int switchPieceID(int ID);
+static void pauseDraw(const unsigned int index);
 static void gameoverDraw(char key, int index, bool flag);
 
 #define TITLE_FILE 		"Assets/title.png"
@@ -117,10 +118,6 @@ int main() {
 	argument.gameover = al_load_bitmap(GAMEOVER_FILE);
 	check_init(argument.gameover, "game over image");
 
-	/* Timer */
-	argument.timer = al_create_timer( (double)3/(3+level) );	//Creo timer de 1 segundo
-	check_init(argument.timer, "timer");
-	al_start_timer(argument.timer);
 
 	/* Cola de Eventos */
 	argument.queue = al_create_event_queue();
@@ -128,7 +125,6 @@ int main() {
 	al_register_event_source(argument.queue, al_get_keyboard_event_source());
 	al_register_event_source(argument.queue, al_get_display_event_source(display));
 	al_register_event_source(argument.queue, al_get_mouse_event_source());
-	al_register_event_source(argument.queue, al_get_timer_event_source(argument.timer));
 
 
 	/* Cálculo de Escala */
@@ -204,8 +200,10 @@ static void check_init(void *pointer, const char *name) {
 }
 
 static void TetrisMenu() {
-	menuDraw();
+	bool hardMode = false;
 	argument.flagMenu = false;
+	menuDraw();
+	al_flip_display();
 
 	while( !(argument.flagMenu) ) {	//Mientras esté en pausa, no empieza.
 
@@ -216,7 +214,7 @@ static void TetrisMenu() {
 				break;
 
 			case ALLEGRO_EVENT_MOUSE_BUTTON_DOWN:
-				TetrisPlay();
+				TetrisPlay(hardMode);
 				break;
 
 			case ALLEGRO_EVENT_KEY_CHAR:
@@ -225,8 +223,17 @@ static void TetrisMenu() {
 				if(al_key_down(&(argument.ks), ALLEGRO_KEY_ESCAPE)) {
 					argument.flagMenu = true;	//Al presionar Esc, se detiene el programa.
 				}
+				else if(al_key_down(&(argument.ks), ALLEGRO_KEY_H)) {
+					argument.redraw = true;
+					if(hardMode == false) {
+						hardMode = true;
+					}
+					else {
+						hardMode = false;
+					}
+				}
 				else {
-					TetrisPlay();
+					TetrisPlay(hardMode);
 				}
 				break;
 
@@ -237,6 +244,10 @@ static void TetrisMenu() {
 		if(argument.redraw && !(argument.flagMenu) && al_is_event_queue_empty(argument.queue)) {
 			argument.redraw = false;
 			menuDraw();
+			if(hardMode) {
+				al_draw_text(argument.font, al_map_rgb(255, 255, 255), dx + move_x*9, dy + move_y*20, 0, "HARD MODE!");
+			}
+			al_flip_display();
 		}
 	}
 }
@@ -247,13 +258,18 @@ static void menuDraw() {
 	al_draw_scaled_bitmap(argument.title, 0, 0, TITLE_WIDTH, TITLE_HEIGHT,
 						  dx, dy,
 						  TITLE_WIDTH * scale, TITLE_HEIGHT * scale, 0);
-	al_flip_display();
 }
 
 
 
-static void TetrisPlay() {
-	int levelStatus = level;
+static void TetrisPlay(const bool hardMode) {
+	unsigned int extraVelocity = 0;
+	if(hardMode) {
+		extraVelocity = HARD_MODE;
+	}
+	newTimer(extraVelocity);
+
+	unsigned int levelStatus = level;
 	bool newColor = false;
 	initBoard();	// Inicializa matriz en 0 y elige primera pieza.
 
@@ -274,16 +290,12 @@ static void TetrisPlay() {
 			case ALLEGRO_EVENT_TIMER:
 				argument.redraw = true;
 
-				if(shiftPieceDown(0)) {		// Desplaza la pieza hacia abajo en la matriz "board". Devuelve el estado de colisión, para saber si realizar el sonido.
+				if(shiftPieceDown(false)) {		// Desplaza la pieza hacia abajo en la matriz "board" sin sumar puntaje. Devuelve el estado de colisión, para saber si realizar el sonido.
 					al_play_sample(argument.sfx8, 1.0, 0.0, 1.0, ALLEGRO_PLAYMODE_ONCE, NULL);
 				}
 				if(levelStatus != level) {
 					levelStatus = level;
-					al_destroy_timer(argument.timer);
-					argument.timer = al_create_timer( (double)3/(3+level) );
-					check_init(argument.timer, "timer");
-					al_register_event_source(argument.queue, al_get_timer_event_source(argument.timer));
-					al_start_timer(argument.timer);
+					newTimer(extraVelocity);
 					newColor = true;
 				}
 				if(alive == false) {
@@ -304,7 +316,7 @@ static void TetrisPlay() {
 				else {
 					if(al_key_down(&(argument.ks), ALLEGRO_KEY_DOWN)) {
 						argument.redraw = true;
-						if(shiftPieceDown(1)) {		// Desplaza la pieza hacia abajo en la matriz "board", sumando puntaje. Devuelve el estado de colisión, para realizar el sonido.
+						if(shiftPieceDown(true)) {		// Desplaza la pieza hacia abajo en la matriz "board", sumando puntaje. Devuelve el estado de colisión, para realizar el sonido.
 							al_play_sample(argument.sfx8, 1.0, 0.0, 1.0, ALLEGRO_PLAYMODE_ONCE, NULL);
 						}
 					}
@@ -339,10 +351,21 @@ static void TetrisPlay() {
 	}
 }
 
+/* Iniciar y Actualizar Timer */
+static void newTimer(const unsigned int extraVelocity) {
+	if(argument.timer != NULL) {
+		al_destroy_timer(argument.timer);
+	}
+	argument.timer = al_create_timer( (double)3/(3+level+extraVelocity) );
+	check_init(argument.timer, "timer");
+	al_register_event_source(argument.queue, al_get_timer_event_source(argument.timer));
+	al_start_timer(argument.timer);
+}
+
 /* Imprimir el Juego con la Matriz */
 static void playDraw(bool newColor) {
-	static int tileColor;
-	int i, j, tileVariant;
+	static unsigned int tileColor;
+	unsigned int i, j, tileVariant;
 	char str[7];
 
 	// Limpio pantalla con negro.
@@ -415,8 +438,8 @@ static void playDraw(bool newColor) {
 }
 
 /* Selección de Texturas para Piezas */
-static int switchPieceID(int ID) {
-	int tileVariant;
+static unsigned int switchPieceID(int ID) {
+	unsigned int tileVariant;
 	switch(ID) {	//Nota: Ver "background.png" junto a "blocks.png" para ver correspondencias.
 		case 0:			// El 0, 3 y 6 corresponden a piezas T, O e I.
 		case 3:
@@ -533,7 +556,7 @@ static void TetrisPause() {
 }
 
 /* Imprimir Menú de Pausa */
-static void pauseDraw(int index) {
+static void pauseDraw(const unsigned int index) {
 	int pauseSelect[4] = {255, 255, 255, 255};
 	pauseSelect[index] = 0;
 
@@ -557,7 +580,7 @@ static void TetrisGameOver() {
 	al_stop_sample_instance(argument.sample_instance); // Detener la reproducción de música
 	gameoverDraw('-', 0, true);		// Imprime en pantalla el leaderboard.
 	char key;
-	int index = 0;
+	unsigned int index = 0;
 
 	bool resume = false;	// Bandera para salir del menú pausa.
 	while( !resume ) {
@@ -606,9 +629,10 @@ static void TetrisGameOver() {
 
 /* Imprimo Menú de Game Over */
 static void gameoverDraw(char key, int index, bool flag) {
-	static int score2, score3, levels[3], aux;		// aux se utiliza para seleccionar el nombre que va a modificarse.
+	static unsigned int score2, score3, levels[3];
+	static signed aux;		// aux se utiliza para seleccionar el nombre que va a modificarse.
 	static char str[3][7] = {"------",  "------", "------"};	// De mayor a menor, el nombre de los 3 mayores puntajes obtenidos.
-	int i;
+	unsigned int i;
 	char dest[19];	//string auxiliar
 
 	if(flag) {

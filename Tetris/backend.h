@@ -2,8 +2,7 @@
 #define TETRIS_BACKEND_H_
 
 #include <stdio.h>
-#include <stdlib.h> //TEMP, JUST A STUB	TODO
-//#include <time.h> //TEMP, JUST A STUB
+#include <stdlib.h>
 #include <stdbool.h>
 
 #if BOARD_HEIGHT<4 || BOARD_WIDTH<4
@@ -13,13 +12,13 @@
 #define PIECES_TETRIS 7		// Number of diferent pieces in Tetris
 
 //Global variables
-extern int board[BOARD_HEIGHT][BOARD_WIDTH], nextPieceStatus[4][4];
-extern int PieceID, nextPieceID, score, lines, level, mod, tetromino[PIECES_TETRIS];
+extern unsigned int board[BOARD_HEIGHT][BOARD_WIDTH], nextPieceStatus[4][4];
+extern unsigned int PieceID, nextPieceID, score, lines, level, mod, tetromino[PIECES_TETRIS];
 extern bool alive;
 
 void rotateClockwise();
 
-int shiftPieceDown(int);
+bool shiftPieceDown(const bool keyPressed);
 void shiftPieceLeft();
 void shiftPieceRight();
 void initBoard();
