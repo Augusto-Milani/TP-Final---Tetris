@@ -13,7 +13,7 @@
 #include <unistd.h>
 #include <string.h>
 #include <time.h>
-#include "Libs/joydrv.h"
+#include "../Libs/joydrv.h"
 #include "letras.h"
 #include "backend.h"
 
