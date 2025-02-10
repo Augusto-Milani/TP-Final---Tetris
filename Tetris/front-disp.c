@@ -16,11 +16,12 @@
 #include "Libs/joydrv.h"
 #include "letras.h"
 #include "backend.h"
-#define MAX_HEIGHT 16
-#define MAX_WIDTH 16
+
+
 #define SEC 1000000
 #define FALL_TIME 1.5//tiempo que espera para caer en sec
 #define SCORE_TIME 1.5
+#define MAX_DIGITS 10
 #define END 99
 #define MAX_TOP 5
 #define HEIGHTNUM 7
@@ -154,8 +155,8 @@ static char menu (void)
 
 static void top (void)
 {
-	int i=0,j,k,f, users[5]={0};
-	char topusers[5][4]={0};
+	int i=0,j,k,f, users[MAX_TOP]={0};
+	char topusers[MAX_TOP][4]={0};
 	dcoord_t coord={0,15};
 	FILE * ftag = fopen("Top/tag.txt", "r");
 	if(!ftag)
@@ -243,7 +244,7 @@ static void play (void)//funcion que se encarga de todo el juego
 	int aux, i=0;
 	char flag=CONT,top;
 	int user;
-	char nums[20]={0};//arreglo para imprimir el score
+	char nums[MAX_DIGITS]={0};//arreglo para imprimir el score
 	joyinfo_t info;
 	clock_t last_fall_time = clock(),last_number_time = clock();// relojes para la caida de la pieza y la impresion del score
 	alive=true;
@@ -431,10 +432,10 @@ static void gameover (char * flag)
 
 static void print_top(char top)//si entra al top se dice en que posicion
 {
-	int i,j,length = 0, num = score;
+	int i,j,length;
 	disp_update();
-	char nums[20]={0};
-	sprintf(nums,"%d",score);
+	char nums[MAX_DIGITS]={0};
+	length=sprintf(nums,"%d",score);//devuelve cuantos caracteres escribio
 	dcoord_t coord={2,5};
 	letras_on(coord,'T');
 	(coord.x)+=4;
@@ -445,18 +446,14 @@ static void print_top(char top)//si entra al top se dice en que posicion
 	(coord.y)=14;
 	letras_on(coord,'0'+top);
 	usleep(SEC*3);
-	while (num > 0)
-	{
-		num /= 10;
-		length++;
-	}
 	disp_clear();
 	disp_update();
 	(coord.x)=15;
 	(coord.y)=10;
+	//imprime el score que esta guardadi en nums
 	for(i=0;i<(length*6+MAX_WIDTH);i++)
 	{
-		for(j=0;j<(int)strlen(nums);j++)
+		for(j=0;j<length;j++)
 		{
 			letras_on(coord,nums[j]);
 			(coord.x)+=6;

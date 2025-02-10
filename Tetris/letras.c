@@ -4,13 +4,12 @@
  *  Created on: 26 ene 2025
  *
  *
+ *
  *      Author: mariano
  */
 
 
 #include "letras.h"
-#define MAX_HEIGHT 16
-#define MAX_WIDTH 16
 
 #define CHECK if((coords.x)<MAX_WIDTH && (coords.y)<MAX_HEIGHT && (coords.x)>=0 && (coords.y)>=0)
 //macro para no intentar prender fuera de la pantalla cuando el deslizante
