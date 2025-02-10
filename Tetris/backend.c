@@ -17,14 +17,10 @@ int PieceID, nextPieceID, score, lines, level, tetromino[PIECES_TETRIS];
 bool alive;
 
 //Local functions
-static void printMatrix_3by3(int[][3]);
-static void printMatrix_4by4(int[][4]);
-static void printBoard();
 static void addPiece();
 static void nextPiece();
 static void collision();
 static void gameOver();
-static void leaderBoard(char[6], unsigned long int, unsigned int, int);
 
 
 //Local variables
@@ -37,43 +33,6 @@ static int status[4][4];    //This matrix stores a copy of the piece that will s
                             //of using the ones defined in pieces.h
 
 static int x_coord, y_coord;	//coords of the piece in the matrix "board"
-
-//**********************************************
-//*           DEBUGGING FUNCTIONS              *
-//**********************************************
-
-static void printMatrix_3by3(int matrix[][3]) { //all 3's in this code are because we're working with a fixed size of 3.
-	int i, j;
-	for (i = 0; i < 3; i++) {        //also, this is a stub
-        for (j = 0; j < 3; j++) {
-            printf("%d ", matrix[i][j]);
-        }
-        printf("\n");
-    }
-    printf("\n");
-}
-
-static void printMatrix_4by4(int matrix[][4]) { //all 4's in this code are because we're working with a fixed size of 4.
-    int i, j;
-	for (i = 0; i < 4; i++) {        //also, this is a stub
-        for (j = 0; j < 4; j++) {
-            printf("%d ", matrix[i][j]);
-        }
-        printf("\n");
-    }
-    printf("\n");
-}
-
-static void printBoard(){ //this is a stub
-	int i, j;
-    for(i = 0; i < BOARD_HEIGHT; i++) {
-        for(j = 0; j < BOARD_WIDTH; j++) {
-            printf("%d ", board[i][j]);
-        }
-        printf("\n");
-    }
-    printf("\n");
-}
 
 //**********************************************
 //*        GAME MECHANICS FUNCTIONS            *
@@ -93,7 +52,6 @@ void initBoard() {
     score = 0;
     lines = 0;
     level = 0;
-    leaderBoard("------", 0, 0, 1);
 
     // Cleans matrix
     for (i = 0; i < 4; i++) {
@@ -252,23 +210,7 @@ static void collision() {
 static void gameOver() {
     printf("Womp womp\nYour score was %d\n", score);
     printf("level reached: %d\n", lines);
-    
 }
-
-static void leaderBoard(char inputName[6], unsigned long int inputScore, unsigned int inputLevel, int firstGame) {
-    if(firstGame) {
-        struct player {
-        char name[6];
-        unsigned long int score;
-        unsigned int level;
-        };
-        struct player leaderBoard[3];
-    }
-    
-}
-
-
-
 
 //**********************************************
 //*            MOVEMENT FUNCTIONS              *

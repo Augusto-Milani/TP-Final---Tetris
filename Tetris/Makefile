@@ -19,7 +19,7 @@ SRC_RASP := backend.c letras.c
 
 #Archivos objeto de pc y raspberry
 OBJS_PC := backend_pc.o
-OBJS_RASP := backend_rasp.o letras.o Libs/disdrv.o Libs/joydrv.o
+OBJS_RASP := backend_rasp.o letras.o 
 
 #Headers para pc y raspberry
 HEAD_PC := backend.h
@@ -27,7 +27,7 @@ HEAD_RASP := backend.h letras.h
 
 #Librerías de Allegro y Raspberry
 LIB_ALLEGRO := -lallegro -lallegro_image -lallegro_font -lallegro_ttf -lallegro_audio -lallegro_acodec
-LIB_RASP := 
+LIB_RASP := Libs/disdrv.o Libs/joydrv.o
 
 #Regla principal
 all: pc raspberry
@@ -36,7 +36,7 @@ pc: front-pc.c $(OBJS_PC) $(HEAD_PC)
 	$(CC) $(OPTIONS) $(DEFINES_PC) $(OBJS_PC) front-pc.c -o pc $(LIB_ALLEGRO)
 	
 raspberry: front-disp.c $(OBJS_RASP) $(HEAD_RASP)
-	$(CC) $(OPTIONS) $(DEFINES_RASP) $(OBJS_RASP) front-disp.c -o raspberry $(LIB_RASP)
+	$(CC) $(OPTIONS) $(DEFINES_RASP) $(OBJS_RASP) $(LIB_RASP) front-disp.c -o raspberry
 	
 # Compilación de backend.c con diferentes defines
 backend_pc.o: backend.c backend.h
@@ -49,7 +49,7 @@ letras.o: letras.c letras.h
 	$(CC) $(OPTIONS) letras.c -c
 
 clean:
-	rm -f $(OBJ)	#Borra todos los archivos objetos sin pedir confirmación
+	rm -f $(OBJS_PC) $(OBJS_RASP)	#Borra todos los archivos objetos sin pedir confirmación
 	
 # Recompilar todo
 rebuild: clean all
