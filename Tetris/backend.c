@@ -1,7 +1,7 @@
 /***************************************************************************//**
   @file     backend.c
   @brief    Backend del TPF Tetris
-  @author   Lety
+  @author   Juan Sambucetti
  ******************************************************************************/
 
 //Headers
@@ -10,6 +10,9 @@
 
 //Macros
 #define PIECE_SIZE(x) ((x)!=6	?	((x)!=3 ? 3 : 2)	:	4)	// if x is an I, it's 4x4, if it's an O, its 2x2. Otherwise, it's 3x3
+
+//Defines
+#define LINES_PER_LEVEL 1		// Lines required for each level.
 
 //Global variables
 unsigned int board[BOARD_HEIGHT][BOARD_WIDTH], nextPieceStatus[4][4];
@@ -205,7 +208,7 @@ static void collision() {
 		lines = 999;
 	}
 	
-    level = (lines / 10);
+    level = (lines / LINES_PER_LEVEL);
     if(level > 99) {
     	level = 99;
     }
@@ -349,7 +352,7 @@ bool shiftPieceDown(const bool keyPressed) {	//Returns 1 if there's collision, 0
 
     y_coord++;
 
-    if(keyPressed && score <= 999999) {
+    if(keyPressed && score <= 999999) {		// Reward for pressing down button
         score++;
     }
     return false;

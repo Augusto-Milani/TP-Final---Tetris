@@ -1,14 +1,8 @@
-/*
- * front-disp.c
- *
- *  Created on: 23 ene 2025
- *
- *
- *      Author: mariano
- */
-
-
-
+/***************************************************************************//**
+  @file     front-disp.c
+  @brief    Frontend del TPF Tetris, para Raspberry
+  @author   Mariano Lombardi
+ ******************************************************************************/
 
 #include <unistd.h>
 #include <string.h>
@@ -16,7 +10,6 @@
 #include "../Libs/joydrv.h"
 #include "letras.h"
 #include "backend.h"
-
 
 #define SEC 1000000
 #define FALL_TIME 1.5//tiempo que espera para caer en sec

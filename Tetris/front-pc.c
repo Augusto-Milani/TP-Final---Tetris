@@ -12,7 +12,15 @@
 #include <allegro5/allegro_audio.h>
 #include <allegro5/allegro_acodec.h>
 
-struct {	// Facilito usar allegro sin pasar muchos argumentos entre funciones.
+#define TITLE_FILE 		"Assets/title.png"
+#define BACKGROUND_FILE "Assets/background.png"
+#define BLOCKS_FILE 	"Assets/blocks.png"
+#define GAMEOVER_FILE	"Assets/game_over.png"
+
+#define HARD_MODE 15	//Nivel en el que se empieza en el modo difícil.
+#define IS_PRINTABLE(x) ( ('a'<=(x)&&(x)<='z') || ('A'<=(x)&&(x)<='Z') || ('0'<=(x)&&(x)<='9') )	//Devuelve 1 si es letra o número.
+
+static struct {	// Facilito usar allegro sin pasar muchos argumentos entre funciones.
 	ALLEGRO_EVENT event;			// Evento que ocurrió (ver switch).
 	ALLEGRO_KEYBOARD_STATE ks;		// Registro del teclado.
 	ALLEGRO_EVENT_QUEUE *queue;		// Registro de eventos.
@@ -27,9 +35,9 @@ struct {	// Facilito usar allegro sin pasar muchos argumentos entre funciones.
 	ALLEGRO_SAMPLE* sfx8;
 	ALLEGRO_SAMPLE* music1;
 	ALLEGRO_SAMPLE_INSTANCE *sample_instance;
-	bool flagMenu;						// Bandera para menú principal y pausa.
-	bool flagPlay;						// Bandera para terminar programa.
-	bool redraw;					// Bandera para dibujar.
+	bool flagMenu;				// Bandera para menú principal y pausa.
+	bool flagPlay;				// Bandera para terminar programa.
+	bool redraw;				// Bandera para dibujar.
 } argument;
 
 
@@ -38,9 +46,6 @@ static unsigned int TITLE_WIDTH, TITLE_HEIGHT, BACK_WIDTH, BACK_HEIGHT,
 					TILE_WIDTH, TILE_HEIGHT, GAMEOVER_WIDTH, GAMEOVER_HEIGHT;
 static unsigned int dx, dy;	//Centrar imagen en pantalla.
 static float scale, move_x, move_y;
-
-#define HARD_MODE 15
-#define IS_LETTER(x) ( ('a'<=(x)&&(x)<='z') || ('A'<=(x)&&(x)<='Z') )
 
 static void check_init(void *pointer, const char *name);
 static void must_init (bool test, const char *description);
@@ -51,16 +56,11 @@ static void TetrisPause();
 static void TetrisGameOver();
 
 static void menuDraw();
-static void playDraw(bool tileColor);
+static void playDraw();
 static void newTimer(const unsigned int extraVelocity);
 static unsigned int switchPieceID(int ID);
 static void pauseDraw(const unsigned int index);
 static void gameoverDraw(char key, int index, bool flag);
-
-#define TITLE_FILE 		"Assets/title.png"
-#define BACKGROUND_FILE "Assets/background.png"
-#define BLOCKS_FILE 	"Assets/blocks.png"
-#define GAMEOVER_FILE	"Assets/game_over.png"
 
 
 int main() {
@@ -223,6 +223,7 @@ static void TetrisMenu() {
 				if(al_key_down(&(argument.ks), ALLEGRO_KEY_ESCAPE)) {
 					argument.flagMenu = true;	//Al presionar Esc, se detiene el programa.
 				}
+				/* Hard Mode */
 				else if(al_key_down(&(argument.ks), ALLEGRO_KEY_H)) {
 					argument.redraw = true;
 					if(hardMode == false) {
@@ -267,10 +268,9 @@ static void TetrisPlay(const bool hardMode) {
 	if(hardMode) {
 		extraVelocity = HARD_MODE;
 	}
-	newTimer(extraVelocity);
+	newTimer(extraVelocity);	//Crea, o destruye y crea un nuevo timer.
 
 	unsigned int levelStatus = level;
-	bool newColor = false;
 	initBoard();	// Inicializa matriz en 0 y elige primera pieza.
 
 	playDraw(false);	//Dibuja la pantalla, sin cambiar color de las piezas.
@@ -296,7 +296,6 @@ static void TetrisPlay(const bool hardMode) {
 				if(levelStatus != level) {
 					levelStatus = level;
 					newTimer(extraVelocity);
-					newColor = true;
 				}
 				if(alive == false) {
 					argument.flagPlay = true;
@@ -345,17 +344,20 @@ static void TetrisPlay(const bool hardMode) {
 		/* Rutina de Impresión */
 		if(argument.redraw && !(argument.flagPlay) && al_is_event_queue_empty(argument.queue)) {
 			argument.redraw = false;
-			playDraw(newColor);	//Dibuja la pantalla. Si newColor es true, cambia color de los bloques.
-			newColor = false;
+			playDraw();	//Dibuja la pantalla.
 		}
 	}
 }
 
 /* Iniciar y Actualizar Timer */
 static void newTimer(const unsigned int extraVelocity) {
+
+	// Si ya existe un timer, lo destruye.
 	if(argument.timer != NULL) {
 		al_destroy_timer(argument.timer);
 	}
+
+	// Crea un nuevo timer con otra dificultad, y lo agrega a la cola de eventos.
 	argument.timer = al_create_timer( (double)3/(3+level+extraVelocity) );
 	check_init(argument.timer, "timer");
 	al_register_event_source(argument.queue, al_get_timer_event_source(argument.timer));
@@ -363,9 +365,8 @@ static void newTimer(const unsigned int extraVelocity) {
 }
 
 /* Imprimir el Juego con la Matriz */
-static void playDraw(bool newColor) {
-	static unsigned int tileColor;
-	unsigned int i, j, tileVariant;
+static void playDraw() {
+	unsigned int i, j, tileColor, tileVariant;
 	char str[7];
 
 	// Limpio pantalla con negro.
@@ -390,14 +391,8 @@ static void playDraw(bool newColor) {
 		al_draw_text(argument.font, al_map_rgb(255, 255, 255), dx + move_x*6.5, dy + move_y*(11+i*2), 0, str);
 	}
 
-	if(newColor) {
-		if(tileColor < 9*TILE_WIDTH) {
-			tileColor += TILE_WIDTH;
-		}
-		else {
-			tileColor = 0;
-		}
-	}
+	// Selección del color, en base al nivel. Ver archivo "blocks.png"
+	tileColor = (level%10)*TILE_HEIGHT;
 
 	// Imprime pieza siguiente
 	for(i=0 ; i<4 ; i++) {
@@ -470,7 +465,6 @@ static void TetrisPause() {
 
 	// Muestro pantalla de pausa con "CONTINUE" seleccionado por defecto (index = 0)
 	pauseDraw(0);
-	al_flip_display();
 
 	bool resume = false;	//	Bandera para resumir juego.
 	while( !resume ) {
@@ -612,7 +606,7 @@ static void TetrisGameOver() {
 
 				else {
 					key = argument.event.keyboard.unichar;	// Registro el caracter presionado.
-					if(IS_LETTER(key)) {
+					if(IS_PRINTABLE(key)) {
 						if(index < 6) {
 							gameoverDraw(key, index++, false);		// Imprime el caracter con el puntaje obtenido.
 						}
